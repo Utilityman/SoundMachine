@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sound Machine</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css"/>
+    <!-- Necassary line for imports -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+    <script type="text/javascript" src="js/jquery-3.0.0.min.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <!-- Last necassary line for imports -->
+    <script>if (window.module) module = window.module;</script>
+</head>
+<body onload="startup()" onresize="resizeWindow()">
+
+<div id="body">
+
+<div id="channelMenu">
+    <ul id="channels">
+        <li class="leftBound" onclick="addChannel()">+</li>
+        <li class="channel leftBound active" id="your-channel">Your Channel</li>
+
+        <!-- Set IDs and add colors -->
+        <li class="rightBound" onclick="closeWindow()">X</li>
+        <li class="rightBound" onclick="minimizeWindow()">_</li>
+    </ul>
+</div>
+
+<div id="channelArea">
+    <div id="col1">
+        <div id="channelUsers">
+            <p class="titleText">Listeners</p>
+            <table id="users">
+                <tr class="active"><td>You</td></tr>
+                <tr class="inactive"><td>Someone Else</td></tr>
+            </table>
+        </div>
+    </div>
+    <div id="col2">
+        <div id="nowPlaying">
+            <p class="titleText">Now Playing</p>
+            <p id="songArtistAlbum">Stairway to Heaven, Led Zeppelin. The Mothership</p>
+            <img src="imgs/cover_art/led_zeppelin_cover_art.jpeg" id="coverArt">
+            <!-- Add Controls -->
+        </div>
+
+        <div id="chatRoom">
+            <p class="titleText">Chat</p>
+            <textarea rows="15" cols="50" id="chatbox" readonly></textarea>
+            <input type="text" id="input"></textarea>
+        </div>
+    </div>
+    <!-- Rework Below -->
+
+    <div id="col3">
+
+
+    </div>
+</div>
+
+<!--<div id="body">--></div>
+</body>
+</html>

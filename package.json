@@ -1,0 +1,14 @@
+{
+  "name": "sound-machine",
+  "version": "1.0.0",
+  "description": "Cross Platform Music Machine",
+  "main": "./main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Josh Mackin",
+  "license": "ISC",
+  "devDependencies": {
+    "electron-prebuilt": "^1.2.7"
+  }
+}

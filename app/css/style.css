@@ -1,0 +1,257 @@
+html, body
+{
+    background: #404040;
+    overflow: hidden;
+    -webkit-app-region: drag;
+    -webkit-user-select: none;
+    margin: 0;
+    padding: 0;
+    font-family: 'Raleway',sans-serif;
+    background: #fff;
+}
+
+#body
+{
+    width: 960px;
+    margin: 0 auto;
+    background: #ddd;
+}
+
+#channelArea
+{
+    margin-left:auto;
+    margin-right:auto;
+    width:2600px; // Hmmm....
+}
+
+#channelMenu
+{
+    margin:0;
+    width: 100%;
+    transition: background-color 1s ease;
+
+}
+
+#channelMenu ul
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #fdd//#262626;
+
+}
+
+#channelMenu li
+{
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 8px 12px;
+    text-decoration: none;
+    font-family: 'Raleway',sans-serif;
+    font-size: 20px;
+}
+
+#channelMenu li:hover:not(.active)
+{
+    background-color: #4E3222;
+}
+
+#channelMenu .active
+{
+    background-color: #c75414;
+}
+
+#col1
+{
+    display: inline-block;
+    width: 150px;
+    float: left;
+    background-color: #bfb//#333333;
+
+}
+
+#col2
+{
+    margin: 20px 10px 0px 10px;
+    display: inline-block;
+    width: 0%;
+    float: left;
+    height: 100%;
+    #background-color: #ddf;
+}
+
+#col3
+{
+    display: inline-block;
+    width: 0;
+    height: 100%;
+    margin-left: 325px;
+    background-color: #5b5b5b;
+}
+
+#nowPlaying, #channelUsers, #chatRoom
+{
+    width: 100%;
+}
+
+#nowPlaying
+{
+    float: left;
+    width: 300px;
+    height: 500px;
+    margin-bottom: 0;
+}
+
+#channelUsers
+{
+    float: left;
+}
+
+#coverArt
+{
+    width: 300px;
+    height: 300px;
+    padding: 0;
+    line-height: 0;
+}
+
+#songArtistAlbum
+{
+    margin-bottom: 0;
+    width: 95%;
+    text-align: center;
+    font-family: 'Raleway',sans-serif;
+    font-size: 14px; font-weight: 200;
+    color: lightgray;
+    margin-top: -8px;
+    padding: 4px 4px;
+}
+
+#musicControls
+{
+    margin-top: 15px;
+    margin-left: 100px;
+    width: 100px;
+    height: 100px;
+}
+
+#channelUsers table
+{
+    background-color: #666699;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: 'Raleway',sans-serif;
+    font-size: 16px; font-weight: 200;
+    color: lightgray;
+}
+
+#channelUsers tr
+{
+    width: 100%;
+    border-bottom: #555555 1px solid;
+}
+
+#channelUsers td
+{
+    padding: 4px 8px;
+    width: 100%;
+}
+
+#channelUsers tr:last-child
+{
+    border-bottom: none;
+}
+
+#channelUsers tr:hover
+{
+    background-color: #d95e4b;
+}
+
+#channelUsers .active
+{
+    background-color: #559955;
+}
+
+#channelUsers .inactive
+{
+    background-color: #995555;
+}
+
+#chatRoom
+{
+    float: left;
+}
+
+#chatbox, #input
+{
+    background-color: #dddddd;
+    padding: 8px 8px;
+    font-family: 'Raleway',sans-serif;
+    font-size: 18px; font-weight: 200;
+    resize: none;
+    outline: none;
+    border-left: #4A4A4A 2px solid;
+    border-right: #4A4A4A 2px solid;
+    margin: 2px 2px 2px 2px;
+    border-radius: 4px;
+    margin: 2px 2px 2px 2px;
+}
+
+#chatbox
+{
+    width: 80%;
+}
+
+#input
+{
+    width: 90%;
+    padding: 2px 2px;
+
+}
+
+#controlTable
+{
+    margin-left: 110px;
+}
+
+#controlTable tr
+{
+    color: gray;
+    text-align: center;
+}
+
+#controlTable td
+{
+    width: 33%;
+}
+
+#controlTable td:hover
+{
+    background-color: dimgray;
+}
+
+.titleText
+{
+    font-family: 'Raleway',sans-serif;
+    font-size: 18px; font-weight: 200;
+    text-align: center;
+    color: lightgray;
+    line-height: 2px;
+}
+
+.leftBound
+{
+    border-right: 1.5px solid dimgray;
+    float: left;
+}
+
+.rightBound
+{
+    border-left: 1.5px solid dimgray;
+    float:right;
+}
+
+/* Image filters */
+.invert {-webkit-filter: invert(100%); filter: invert(100%);}
