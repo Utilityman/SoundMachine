@@ -7,7 +7,6 @@ html, body
     margin: 0;
     padding: 0;
     font-family: 'Raleway',sans-serif;
-    background: #fff;
 }
 
 #body
@@ -21,7 +20,6 @@ html, body
 {
     margin-left:auto;
     margin-right:auto;
-    width:2600px; // Hmmm....
 }
 
 #channelMenu
@@ -38,7 +36,7 @@ html, body
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #fdd//#262626;
+    background-color: #262626;
 
 }
 
@@ -49,13 +47,27 @@ html, body
     text-align: center;
     padding: 8px 12px;
     text-decoration: none;
-    font-family: 'Raleway',sans-serif;
     font-size: 20px;
 }
 
-#channelMenu li:hover:not(.active)
+#channelMenu li.gray:hover:not(.active)
 {
-    background-color: #4E3222;
+    background-color: #767676;
+}
+
+#channelMenu li.orange:hover:not(.active)
+{
+    background-color: #767676;
+}
+
+#channelMenu li.red:hover:not(.active)
+{
+    background-color: #AA6666;
+}
+
+#channelMenu li.green:hover:not(.active)
+{
+    background-color: #66AA66;
 }
 
 #channelMenu .active
@@ -66,29 +78,19 @@ html, body
 #col1
 {
     display: inline-block;
-    width: 150px;
+    width: 500px;
     float: left;
-    background-color: #bfb//#333333;
+    background-color: #333333;
 
 }
 
 #col2
 {
-    margin: 20px 10px 0px 10px;
     display: inline-block;
     width: 0%;
     float: left;
     height: 100%;
-    #background-color: #ddf;
-}
-
-#col3
-{
-    display: inline-block;
-    width: 0;
-    height: 100%;
-    margin-left: 325px;
-    background-color: #5b5b5b;
+    background-color: #444444;
 }
 
 #nowPlaying, #channelUsers, #chatRoom
@@ -99,14 +101,19 @@ html, body
 #nowPlaying
 {
     float: left;
-    width: 300px;
-    height: 500px;
-    margin-bottom: 0;
+    width: 350px;
+    background-color: #535353;
+}
+
+#centerAnchor
+{
+    margin-top: 24px;
 }
 
 #channelUsers
 {
     float: left;
+    width: 150px;
 }
 
 #coverArt
@@ -115,6 +122,7 @@ html, body
     height: 300px;
     padding: 0;
     line-height: 0;
+    margin-left: 25px;
 }
 
 #songArtistAlbum
@@ -122,7 +130,6 @@ html, body
     margin-bottom: 0;
     width: 95%;
     text-align: center;
-    font-family: 'Raleway',sans-serif;
     font-size: 14px; font-weight: 200;
     color: lightgray;
     margin-top: -8px;
@@ -142,7 +149,6 @@ html, body
     background-color: #666699;
     border-collapse: collapse;
     width: 100%;
-    font-family: 'Raleway',sans-serif;
     font-size: 16px; font-weight: 200;
     color: lightgray;
 }
@@ -157,6 +163,7 @@ html, body
 {
     padding: 4px 8px;
     width: 100%;
+    text-align: center;
 }
 
 #channelUsers tr:last-child
@@ -164,7 +171,7 @@ html, body
     border-bottom: none;
 }
 
-#channelUsers tr:hover
+#channelUsers tr:hover:not(.inactive)
 {
     background-color: #d95e4b;
 }
@@ -176,19 +183,21 @@ html, body
 
 #channelUsers .inactive
 {
-    background-color: #995555;
+    background-color: #999999;
+    color: #666666;
 }
 
 #chatRoom
 {
+    margin-left: 10px;
     float: left;
+    width: 100%;
 }
 
 #chatbox, #input
 {
     background-color: #dddddd;
     padding: 8px 8px;
-    font-family: 'Raleway',sans-serif;
     font-size: 18px; font-weight: 200;
     resize: none;
     outline: none;
@@ -199,14 +208,9 @@ html, body
     margin: 2px 2px 2px 2px;
 }
 
-#chatbox
-{
-    width: 80%;
-}
 
 #input
 {
-    width: 90%;
     padding: 2px 2px;
 
 }
@@ -234,7 +238,6 @@ html, body
 
 .titleText
 {
-    font-family: 'Raleway',sans-serif;
     font-size: 18px; font-weight: 200;
     text-align: center;
     color: lightgray;

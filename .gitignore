@@ -1,5 +1,10 @@
 .DS_Store
 
+## specific folders
 node_modules/
+pink.flag/
 
+## Resources
 *.png
+*.m4a
+*.mp3
