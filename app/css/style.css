@@ -26,8 +26,10 @@ html, body
 {
     margin:0;
     width: 100%;
-    transition: background-color 1s ease;
-
+    width: 100%;
+    list-style-type: none;
+    margin: auto;
+    white-space: nowrap;
 }
 
 #channelMenu ul
@@ -37,37 +39,61 @@ html, body
     padding: 0;
     overflow: hidden;
     background-color: #262626;
-
 }
 
 #channelMenu li
 {
-    display: inline-block;
     color: white;
     text-align: center;
-    padding: 8px 12px;
+    padding: 4px 8px;
     text-decoration: none;
-    font-size: 20px;
+    font-size: 18px;
+}
+
+#channelMenu > ul {
+    white-space: nowrap;
+}
+
+#channelMenu > ul > li {
+  display: inline-block;
+ // float: none;
+  margin: 0 -3px 0 0;
 }
 
 #channelMenu li.gray:hover:not(.active)
 {
+    -webkit-transition: ease-in-out all .4s;
     background-color: #767676;
 }
 
 #channelMenu li.orange:hover:not(.active)
 {
+    -webkit-transition: ease-in-out all .4s;
     background-color: #767676;
 }
 
 #channelMenu li.red:hover:not(.active)
 {
+    -webkit-transition: ease-in-out all .4s;
     background-color: #AA6666;
 }
 
 #channelMenu li.green:hover:not(.active)
 {
+    -webkit-transition: ease-in-out all .4s;
     background-color: #66AA66;
+}
+
+#channelMenu li.yellow:hover:not(.active)
+{
+    -webkit-transition: ease-in-out all .4s;
+    background-color: #6666AA;
+}
+
+#channelMenu li.blue:hover:not(.active)
+{
+    -webkit-transition: ease-in-out all .4s;
+    background-color: #66AAAA;
 }
 
 #channelMenu .active
@@ -114,15 +140,32 @@ html, body
 {
     float: left;
     width: 150px;
+//background: -webkit-linear-gradient(left, #373737 7%,#333333 91%); /* Chrome10-25,Safari5.1-6 */
 }
 
-#coverArt
+#imageBuffer
 {
+    width: 300px;
+    height: 300px;
+}
+
+#imageBufer .inactive
+{
+    opacity: 0;
+}
+
+.coverArt
+{
+    position: absolute;
     width: 300px;
     height: 300px;
     padding: 0;
     line-height: 0;
     margin-left: 25px;
+    background-color: black;
+    transition:opacity 1s linear;
+    opacity: 1;
+
 }
 
 #songArtistAlbum
@@ -173,6 +216,8 @@ html, body
 
 #channelUsers tr:hover:not(.inactive)
 {
+    -webkit-transition: ease-in-out all .2s;
+
     background-color: #d95e4b;
 }
 
@@ -236,9 +281,97 @@ html, body
     background-color: dimgray;
 }
 
+#otherPanels
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #575757;
+    width: 100%;
+    list-style-type: none;
+    margin: auto;
+    white-space: nowrap;
+}
+
+#otherPanels li
+{
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 8px 12px;
+    text-decoration: none;
+    font-size: 16px;
+    background-color: #222222;
+}
+
+#otherPanels li:hover
+{
+    background-color: black;
+    -webkit-transition: ease-in-out all .4s;
+
+}
+
+#otherPanels > ul {
+    white-space: nowrap;
+}
+
+#otherPanels > ul > li {
+  display: inline-block;
+  float: none;
+  margin: 0 -3px 0 0;
+}
+
+#otherPanels li.active
+{
+    background-color: #444444;
+}
+
+#clickMe
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #575757;
+    width: 100%;
+    list-style-type: none;
+    margin: auto;
+    white-space: nowrap;
+}
+
+#clickMe li
+{
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 8px 12px;
+    text-decoration: none;
+    font-size: 16px;
+    background-color: #222222;
+}
+
+.tabcontent
+{
+    display: none;
+    -webkit-animation: fadeEffect .5s;
+}
+
+@-webkit-keyframes fadeEffect
+{
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeEffect
+{
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
 .titleText
 {
-    font-size: 18px; font-weight: 200;
+    font-size: 17px; font-weight: 200;
     text-align: center;
     color: lightgray;
     line-height: 2px;
@@ -255,6 +388,27 @@ html, body
     border-left: 1.5px solid dimgray;
     float:right;
 }
+
+.channelInfo
+{
+    color: white;
+    margin-left: 8px;
+    //padding: 4px 8px;
+    font-size: 18px;
+    margin-top: -4px;
+    position:absolute;
+    display:inline-block;
+    max-width:0%;
+    overflow:hidden;
+    transition:all 1s ease-in;
+    //background: gray;
+}
+
+.hidden
+{
+    display: none;
+}
+
 
 /* Image filters */
 .invert {-webkit-filter: invert(100%); filter: invert(100%);}

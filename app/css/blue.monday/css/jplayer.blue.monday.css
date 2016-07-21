@@ -39,7 +39,9 @@
 .jp-audio {
   margin-top: 4px;
   margin-left: 12.5px;
-  width:325px; }
+  width:325px;
+  height: 100px;
+}
 
 .jp-audio-stream {
   width: 182px; }
@@ -91,7 +93,7 @@
 .jp-interface {
   position: relative;
   background-color: #eee;
-  width: 80%; } /* TODO: Maybe change this */
+  width: 80%; }
 
 .jp-audio .jp-interface {
   height: 80px; }
@@ -186,6 +188,24 @@
 
 .jp-next:focus {
   background: url("../image/jplayer.blue.monday.jpg") -29px -141px no-repeat; }
+
+.jp-skip-forward
+{
+    margin-top: 32px;
+    margin-left: 118px;
+    width: 40px;
+    height: 40px;
+    background: url("../image/jplayer.blue.monday.jpg") -82px 0 no-repeat;
+}
+
+.jp-skip-back
+{
+    margin-top: 32px;
+    margin-left: -108px;
+    width: 40px;
+    height: 40px;
+    background: url("../image/jplayer.blue.monday.jpg") -82px -42px no-repeat;
+}
 
 /* @end */
 /* @group progress bar */
@@ -523,7 +543,7 @@ span.jp-artist {
 
 .jp-shuffle {
   background: url("../image/jplayer.blue.monday.jpg") 0 -270px no-repeat;
-  margin-left: 5px; }
+  margin-top: 42px; }
 
 .jp-shuffle:focus {
   background: url("../image/jplayer.blue.monday.jpg") -30px -270px no-repeat; }
