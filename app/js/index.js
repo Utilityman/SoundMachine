@@ -1,8 +1,13 @@
 'use strict';
 
+/* TODO: about:blank error
+    from node_modules/jplayer/dist/jplayer/jquery.jplayer.js line 2957
+    solution: delete line
+*/
+
 const SKIP_DEPLAY = 3;
 // instead of console.loging, I call log which calls console.log but first checks this variable
-const debugging = true;
+//const debugging = true;
 
 var jsmediatags = require("jsmediatags");
 //var io = require('socket.io')(8989);

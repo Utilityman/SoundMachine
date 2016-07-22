@@ -22,3 +22,5 @@ sound-machine-win32-x64/
 
 *.m4a
 *.mp3
+
+*.swp

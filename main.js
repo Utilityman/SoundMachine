@@ -11,7 +11,7 @@ function createWindow()
 {
     mainWindow = new BrowserWindow(
     {
-        //frame: false,
+        frame: false,
         height: 600,
         width: 808,
         resizable: true,
@@ -23,7 +23,7 @@ function createWindow()
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
-    //mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {
