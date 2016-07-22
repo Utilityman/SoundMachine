@@ -55,8 +55,6 @@
                 <img src="" class="coverArt inactive">
                 <img src="imgs/discIcon.png" class="coverArt active">
             </div>
-            <div id="jMusic">
-            </div>
 
 <!-- jPLAYER INTERFACE -->
 <div id="jquery_jplayer_1" class="jp-jplayer"></div>
@@ -99,6 +97,13 @@
 </div>
 <!-- End jPlayer Interface -->
 
+    <div id="playListPanel">
+        <ul id="playList">
+            <li class="smallHeight">Up Next</li>
+        </ul>
+    </div>
+
+
 <!--<div id="nowPlaying">--></div>
 
     </div>
@@ -106,6 +111,7 @@
         <ul id="otherPanels">
             <li class="tablinks" onclick="openTab(this, 'chatRoom')">Chat</li>
             <li class="tablinks active" onclick="openTab(this, 'library')">Library</li>
+            <li class="tablinks" onclick="openTab(this, 'playlists')">Playlists</li>
             <li class="tablinks" onclick="openTab(this, 'settings')">Settings</li>
         </ul>
         <div id="chatRoom" class="tabcontent">
@@ -115,7 +121,14 @@
             <input type="text" id="input"></textarea>
         </div>
         <div id="library" class="tabcontent">
-            <ul id="resourceTree"></ul>
+            <ul id="resourceTree">
+
+            </ul>
+        </div>
+        <div id="playlists" class="tabcontent">
+            <ul>
+                <li>Create Playlist</li>
+            </ul>
         </div>
         <div id="settings" class="tabcontent">
             <p>Oh hello!</p>

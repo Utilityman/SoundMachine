@@ -3,15 +3,19 @@
 const SKIP_DEPLAY = 3;
 
 var jsmediatags = require("jsmediatags");
+//var io = require('socket.io')(8989);
 var fs = require('fs');
 var path = require('path');
 var genreData = require('./data/genre.json');
-var songCatalogue = require("./data/manifest.json");
+//var songCatalogue = require("./data/manifest.json");
 
-function SongData(path, type)
+function SongData(path, type, name, album, artist)
 {
     this.path = path;
     this.type = type;
+    this.name = name;
+    this.album = album;
+    this.artist = artist;
 }
 
 // File System Variables
@@ -44,7 +48,11 @@ function startup()
 
 /**
  *  Loads the music from the filesystem. Music is located in
- *  the app/res directory.
+ *  the app/res directory. Once the paths to the music files are
+ *  read, then jsmediatags is called to read in title,album,artist
+ *  details. When jsmediatags finishes, then setupLibraryPane() is called.
+ *
+ *  Note: currently isn't handling undefined albums/artists/titles
  */
 function loadMusic(dir)
 {
@@ -87,31 +95,29 @@ function loadMusic(dir)
             var type = results[i].substring(results[i].length-3, results[i].length);
             if(type == 'mp3' || type == 'm4a')
             {
-                var path  = results[i];
-                songs.push(new SongData(path, type));
                 asyncCalls++;
-                jsmediatags.read(path,
+                (function(path)
                 {
-                    onSuccess: function(tag)
+                    jsmediatags.read(path,
                     {
-                        collection.addAll(tag.tags.artist, tag.tags.album, tag.tags.title);
+                        onSuccess: function(tag)
+                        {
+                            collection.addAll(tag.tags.artist,
+                                              tag.tags.album,
+                                              tag.tags.title,
+                                              path);
 
-                        asyncCalls--;
-                        if(asyncCalls == 0)
-                            setupLibraryPane();
-                    },
-                    onError: function(error)
-                    {
-                        console.log(':(', error.type, error.info);
-                    },
-                });
+                            asyncCalls--;
+                            if(asyncCalls == 0)
+                                setupLibraryPane();
+                        },
+                        onError: function(error)
+                        {
+                            console.log(':(', error.type, error.info);
+                        },
+                    });
+                })(results[i]);
             }
-        }
-        if(songs.length > 0)
-        {
-            createManifest();
-            shuffle(songs);
-            initSong(songs[0]);
         }
     });
 }
@@ -145,14 +151,105 @@ function loadLibrary()
 
 }
 
+/**
+ *  This function gets called once all of the async jsmediatags finish.
+ *  It utilizes the collection (which is a tree of all of the tracks)
+ *  to create li's in the resourceTree for the user to interact with.
+ *
+ *  Since this is the callback function for when the collection is
+ *  completely created, this function calls the createManifest function.
+ */
 function setupLibraryPane()
 {
     collection.log();
+    // At this point, the async  process has called back...
+    // so the collection can be written.
+    createManifest();
+    var baseList = $("#resourceTree");
+    var artists = collection.getDepth(0);
+    for(var i = 0; i < artists.length; i++)
+    {
+        // Created li element for artists:
+        // <li id="<Artist_Name>" onclick="showArtists(this)">Artist Name</li>
+        baseList.append('<li id="' + artists[i].split(' ').join('_') +
+                        '" onclick="showAlbums(this)">'+artists[i]+'</li>');
+        var albums = collection.get(artists[i], 1);
+        for(var j = 0; j < albums.length; j++)
+        {
+        //Created li element for albums:
+        // <li class="album hidden <Artist_Name>" id="<Album_Name>"
+        //                              onclick="showSongs(this)">Album Name</li>
+
+            baseList.append('<li class="album hidden ' +
+                            artists[i].split(' ').join('_') +
+                            '" id="' + albums[j].split(' ').join('_') +
+                            '" onclick="showSongs(this)">' +
+                            albums[j] + '</li>');
+            var songs = collection.get(albums[j], 2);
+            for(var k = 0; k < songs.length; k++)
+            {
+                baseList.append('<li id="' + songs[k].split(' ').join('_') +
+                                '" class="song hidden ' + albums[j].split(' ').join('_') +
+                                '" onclick="addToPlaylist(this)">' +
+                                songs[k] + '</li>');
+            }
+        }
+    }
+    console.log(baseList);
+}
+
+/**
+ *  Artist onclick event. This shows the albums taht belong to the artist
+ */
+function showAlbums(origin)
+{
+    //console.log($("." + origin.getAttribute('id')));
+    $('#resourceTree .album').addClass('hidden');
+    $('#resourceTree .active').removeClass('active');
+    $(document.getElementById(origin.getAttribute('id'))).addClass('active');
+    $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+    $("#resourceTree .song").addClass('hidden');
+
+}
+
+/**
+ *  Album onclick event. This shows the songs belonging to album
+ */
+function showSongs(origin)
+{
+    $("#resourceTree .song").addClass('hidden');
+    $("#resourceTree .album.active").removeClass('active');
+    $(document.getElementById(origin.getAttribute('id'))).addClass('active');
+    $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+}
+
+/**
+ *  Song onlick event. This adds the clicked song to the playlist
+ */
+function addToPlaylist(origin)
+{
+    // Relies on the song name being in the text of the origin...
+    var collectionData = collection.get(origin.textContent, 3);
+    console.log(collectionData);
+
+    songs.push(new SongData(collectionData[0],
+        collectionData[0].substring(collectionData[0].length-3,
+            collectionData[0].length),
+            collectionData[3],
+            collectionData[2],
+            collectionData[1]));
+
+    console.log(songs);
+    if(songs.length == 1)
+        initSong(songs[0]);
+
+    $("#playList").append('<li>' + collectionData[3] +
+                            ", " + collectionData[1] + '</li>');
 }
 
 $(document).bind("mousedown", function(e)
 {
-    console.log("hey");
+    console.log("doink");
 });
 /**
  *  Iterates over songs[] immediately after the library
@@ -161,7 +258,7 @@ $(document).bind("mousedown", function(e)
  */
 function createManifest()
 {
-    fs.writeFile("app/data/manifest.json", JSON.stringify(songs),
+    fs.writeFile("app/data/manifest.json", JSON.stringify(collection),
         function(err)
         {
             if(err) console.log("error writing manifest.json");
@@ -190,9 +287,11 @@ function initSong(song)
     {
         onSuccess: function(tag)
         {
-            console.log(tag);
-            $("#songArtistAlbum").text(tag.tags.title + ", " + tag.tags.artist + " on " + tag.tags.album);
-            $(".channel.active").children().text(tag.tags.title + " by " + tag.tags.artist);
+            $("#songArtistAlbum").text(song.name + ", " +
+                                       song.artist + " on " +
+                                       song.album);
+            $(".channel.active").children().text(song.name + " by " +
+                                                    song.artist);
             getCoverArt(tag);
         },
         onError: function(error)
@@ -357,6 +456,7 @@ function addChannel()
  *  Appropriately manages the resizing of the window.
  *  This function will also convert the player into the miniplayer
  *  when resized to the minimum height
+
  */
 function resizeWindow()
 {
@@ -368,26 +468,36 @@ function resizeWindow()
     $("#chatbox").width($(window).width() - 550);
     $("#chatbox").height($(window).height() - 150);
     $("#input").width($(window).width() - 540);
-    if($(window).height() > 532)
-        $("#centerAnchor").css("margin-top", ((($(window).height() / 2) - 254) + "px"));
     if($(window).height() == 28)
     {
         miniplayer = true;
-        var channelInfo = $(".channel.active span");
-        channelInfo.css("padding", "4px 8px");
-        channelInfo.css("background", "gray");
-        channelInfo.css("max-width", "100%");
-        channelInfo.on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd',
-        function() {
-            channelInfo.parent().css("margin-right", channelInfo.width() + 16);
-        });
+        convertToMiniplayer();
     }
     else if(miniplayer)
     {
-        $(".channel.active").children().css("padding", "0");
-        $(".channel.active").children().css("max-width", "0");
-        $(".channel.active").css("margin-right", 0);
+        miniplayer = false;
+        convertFromMiniplayer();
     }
+}
+
+/* TODO: Work on the miniplayer*/
+function convertToMiniplayer()
+{
+    var channelInfo = $(".channel.active span");
+    channelInfo.css("padding", "4px 8px");
+    channelInfo.css("background", "gray");
+    channelInfo.css("max-width", "100%");
+    channelInfo.on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd',
+    function() {
+        channelInfo.parent().css("margin-right", channelInfo.width() + 16);
+    });
+}
+
+function convertFromMiniplayer()
+{
+    $(".channel.active").children().css("padding", "0");
+    $(".channel.active").children().css("max-width", "0");
+    $(".channel.active").css("margin-right", 0);
 }
 
 function closeWindow()
@@ -426,6 +536,7 @@ function nextSong()
 {
     if(songs.length > 0)
     {
+        $("#playList li:nth-child(2)").remove();
         $("#jquery_jplayer_1").jPlayer("destroy");
         if(!repeat)
         {

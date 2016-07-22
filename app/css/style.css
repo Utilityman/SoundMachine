@@ -140,7 +140,7 @@ html, body
 {
     float: left;
     width: 150px;
-//background: -webkit-linear-gradient(left, #373737 7%,#333333 91%); /* Chrome10-25,Safari5.1-6 */
+//background: -webkit-linear-gradient(top, #373737 7%,#333333 91%); /* Chrome10-25,Safari5.1-6 */
 }
 
 #imageBuffer
@@ -166,6 +166,53 @@ html, body
     transition:opacity 1s linear;
     opacity: 1;
 
+}
+
+#playListPanel
+{
+    width: 300px;
+    margin-left: 25px;
+    overflow: hidden;
+    white-space: nowrap;
+
+}
+
+#playList
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 300px;
+    margin-top: 8px;
+    white-space: nowrap;
+    text-align: center;
+    background: -webkit-linear-gradient(left, #535353 0%,#696969 50%,#535353 100%); /* Chrome10-25,Safari5.1-6 */    color: #FFF;
+}
+
+#playList li
+{
+    padding: 6px 4px;
+    width: 100%;
+    border-bottom: 1.5px solid #444444;
+
+}
+
+#playList li:first-child
+{
+    background-color: #444444;
+    line-height: 12px;
+    border-top: 1.5px solid #444444;
+}
+
+#playList li:first-child:hover
+{
+    background-color: #444444;
+}
+
+#playList li:hover
+{
+    background-color: #666666;
 }
 
 #songArtistAlbum
@@ -327,34 +374,66 @@ html, body
     background-color: #444444;
 }
 
-#clickMe
+#resourceTree
 {
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #575757;
     width: 100%;
     list-style-type: none;
     margin: auto;
     white-space: nowrap;
 }
 
-#clickMe li
+#resourceTree li
 {
-    display: inline-block;
     color: white;
-    text-align: center;
+    text-align: left;
     padding: 8px 12px;
     text-decoration: none;
     font-size: 16px;
-    background-color: #222222;
+    background-color: #444444;
+    border-bottom: 1.5px solid #282828;
 }
 
-.tabcontent
+#resourceTree li:hover
 {
-    display: none;
-    -webkit-animation: fadeEffect .5s;
+    background-color: #222222;
+    -webkit-transition: ease-in-out all .2s;
+}
+
+#resourceTree li.active
+{
+    background-color: #333333
+}
+
+#resourceTree .album
+{
+    background-color: #777777;
+    border-bottom: 1.5px solid #333333;
+}
+
+#resourceTree .album:hover
+{
+    background-color: #555555;
+}
+
+#resourceTree .album.active
+{
+    background-color: #5D5D5D;
+}
+
+#resourceTree .song
+{
+    color: black;
+    background-color: #CCCCCC;
+    border-bottom: 1.5px solid #333333;
+}
+
+#resourceTree .song:hover
+{
+    background-color: #999999;
 }
 
 @-webkit-keyframes fadeEffect
@@ -404,11 +483,16 @@ html, body
     //background: gray;
 }
 
+.tabcontent
+{
+    display: none;
+    -webkit-animation: fadeEffect .5s;
+}
+
 .hidden
 {
     display: none;
 }
-
 
 /* Image filters */
 .invert {-webkit-filter: invert(100%); filter: invert(100%);}

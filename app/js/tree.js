@@ -1,7 +1,8 @@
 var debugging = false;
 
 /**
-    A tree with 3 levels
+    A tree with 4 levels
+    Very customized for this project
 */
 var Tree = function(param)
 {
@@ -35,7 +36,7 @@ Tree.prototype.log = function()
     }
 }
 
-Tree.prototype.addAll = function(artist, album, song)
+Tree.prototype.addAll = function(artist, album, song, path)
 {
     var firstLevel;
     var secondLevel;
@@ -56,17 +57,116 @@ Tree.prototype.addAll = function(artist, album, song)
         firstLevel.branches.push(albumTree);
         secondLevel = albumTree;
     }
-    if(contains(secondLevel.branches, song))
+    if(thirdLevel = contains(secondLevel.branches, song))
         ;
     else
     {
-        secondLevel.branches.push(new Tree(song));
+        var songTree = new Tree(song);
+        secondLevel.branches.push(songTree);
+        thirdLevel = songTree;
+    }
+    if(contains(thirdLevel.branches, path))
+        ;
+    else
+    {
+        thirdLevel.branches.push(new Tree(path));
+    }
+}
+
+/**
+ *  Gets all items of certain depth in the Tree
+ *  note: O(n) for depth 0 but higher degrees for higher depths
+ *  @param {number} depth - the depth of the items to search for
+ *  @return {array} the set of items at that depth
+ */
+Tree.prototype.getDepth = function(depth)
+{
+    var collection = [];
+    if(depth == 0)
+        collection = getBranchItems(this.branches);
+    else
+    {
+        for(var i = 0; i < this.branches.length; i++)
+        {
+            if(depth == 1)
+            {
+                var miniCollection = getBranchItems(this.branches[i].branches);
+                collection = collection.concat(miniCollection);
+            }
+
+        }
     }
 
-    //console.log(this);
-
-
+    return collection;
 }
+
+/**
+ *  Gets the items from the id's branches
+ *  note: the order of this function depends on the depth of the id
+ *  @param {string} id - the name of the item of the tree you're looking for
+ *  @param {int} level - the expected level of the items
+ *              1 -- Match Artist (returns $[albums])
+ *              2 -- Match Album (returns $[songs])
+ *              3 -- Match Songs (returns [path, artist, album, title])
+ *  @return {array} a collection of items that belong to the id
+ */
+Tree.prototype.get = function(id, level)
+{
+    var tree = this.branches;
+    var collection = [];
+    // for all of the artists
+    for(var i = 0; i < tree.length; i++)
+    {
+        // if an artist matches the id
+        if(tree[i].item == id && level == 1)
+        {
+            // get all of their albums
+            collection = getBranchItems(tree[i].branches);
+            if(debugging)console.log(collection);
+            break;
+        }
+        // for all of the albums
+        for(var j = 0; j < tree[i].branches.length; j++)
+        {
+            // if the album matches the id
+            if(tree[i].branches[j].item == id && level == 2)
+            {
+                // get all of that albums songs
+                collection = getBranchItems(tree[i].branches[j].branches);
+                if(debugging)console.log(collection);
+                break;
+            }
+            // for all of the songs
+            for(var k = 0; k < tree[i].branches[j].branches.length; k++)
+            {
+                // if the song matches
+                if(tree[i].branches[j].branches[k].item == id && level == 3)
+                {
+                    collection = getBranchItems(tree[i].branches[j].branches[k].branches);
+                    collection.push(tree[i].item);
+                    collection.push(tree[i].branches[j].item);
+                    collection.push(tree[i].branches[j].branches[k].item);
+                    if(debugging)console.log(collection);
+                    break;
+                }
+            }
+        }
+    }
+    return collection;
+}
+
+/**
+ *  Gets the items off of a certain branch.
+ */
+ function getBranchItems(branches)
+ {
+     var collection = [];
+     for(var i =0; i < branches.length; i++)
+     {
+         collection.push(branches[i].item);
+     }
+     return collection;
+ }
 
 function contains(list, obj)
 {
