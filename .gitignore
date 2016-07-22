@@ -7,10 +7,18 @@ pink.flag/
 ## generated files
 manifest.json
 
+## packager
+sound-machine-darwin-x64/
+sound-machine-linux-ia32/
+sound-machine-linux-x64/
+sound-machine-win32-ia32/
+sound-machine-mas-x64/
+sound-machine-win32-x64/
+
 ## Resources 
 #(images will be uploaded once I actually create my own)
 *.jpeg
-*.jpg
-*.png
+
+
 *.m4a
 *.mp3

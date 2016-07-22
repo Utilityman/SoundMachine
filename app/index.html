@@ -98,9 +98,11 @@
 <!-- End jPlayer Interface -->
 
     <div id="playListPanel">
-        <ul id="playList">
-            <li class="smallHeight">Up Next</li>
-        </ul>
+        <div id="playListScroll">
+            <ul id="playList">
+                <li class="smallHeight">Up Next</li>
+            </ul>
+        </div>
     </div>
 
 
@@ -121,9 +123,19 @@
             <input type="text" id="input"></textarea>
         </div>
         <div id="library" class="tabcontent">
+            <div id="libraryScroll">
+
             <ul id="resourceTree">
+                <li onclick="showSettings(this)" id="librarySettings">Loading...</li>
+                <li class="setting hidden" onclick="addAll()">Add All to Queue</li>
+                <li class="setting hidden" onclick="showSortSettings(this)">Sort By</li>
+                <li class="sort hidden" onclick="sortBy('album')">Album (A-Z)</li>
+                <li class="sort hidden" onclick="sortBy('artist')">Artist (A-Z)</li>
+                <li class="sort hidden" onclick="sortBy('songName')">Song Name (A-Z)</li>
 
             </ul>
+        </div>
+
         </div>
         <div id="playlists" class="tabcontent">
             <ul>

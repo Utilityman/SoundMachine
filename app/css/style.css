@@ -2,7 +2,7 @@ html, body
 {
     background: #404040;
     overflow: hidden;
-    -webkit-app-region: drag;
+    webkit-app-region: drag;
     -webkit-user-select: none;
     margin: 0;
     padding: 0;
@@ -30,6 +30,8 @@ html, body
     list-style-type: none;
     margin: auto;
     white-space: nowrap;
+    webkit-app-region: drag;
+
 }
 
 #channelMenu ul
@@ -107,7 +109,6 @@ html, body
     width: 500px;
     float: left;
     background-color: #333333;
-
 }
 
 #col2
@@ -140,7 +141,6 @@ html, body
 {
     float: left;
     width: 150px;
-//background: -webkit-linear-gradient(top, #373737 7%,#333333 91%); /* Chrome10-25,Safari5.1-6 */
 }
 
 #imageBuffer
@@ -165,16 +165,22 @@ html, body
     background-color: black;
     transition:opacity 1s linear;
     opacity: 1;
-
 }
 
 #playListPanel
 {
-    width: 300px;
-    margin-left: 25px;
+    width: 350px;
+    //height: 100%;
     overflow: hidden;
     white-space: nowrap;
+}
 
+#playListScroll, #libraryScroll
+{
+    width: 100%;
+    padding-right: 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #playList
@@ -183,36 +189,36 @@ html, body
     margin: 0;
     padding: 0;
     overflow: hidden;
-    width: 300px;
+    width: 350px;
     margin-top: 8px;
     white-space: nowrap;
     text-align: center;
-    background: -webkit-linear-gradient(left, #535353 0%,#696969 50%,#535353 100%); /* Chrome10-25,Safari5.1-6 */    color: #FFF;
+    background: linear-gradient(to bottom, #494949 0%,#5d5d5d 50%,#494949 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    color: #FFF;
 }
 
 #playList li
 {
     padding: 6px 4px;
     width: 100%;
-    border-bottom: 1.5px solid #444444;
-
+    border-bottom: 1.5px solid #555555;
 }
 
 #playList li:first-child
 {
-    background-color: #444444;
+    background-color: #5D5D5D;
     line-height: 12px;
-    border-top: 1.5px solid #444444;
+    border-top: 1.5px solid #555555;
 }
 
 #playList li:first-child:hover
 {
-    background-color: #444444;
+    background-color: #5D5D5D;
 }
 
 #playList li:hover
 {
-    background-color: #666666;
+    background-color: #494949;
 }
 
 #songArtistAlbum
@@ -264,7 +270,6 @@ html, body
 #channelUsers tr:hover:not(.inactive)
 {
     -webkit-transition: ease-in-out all .2s;
-
     background-color: #d95e4b;
 }
 
@@ -300,11 +305,9 @@ html, body
     margin: 2px 2px 2px 2px;
 }
 
-
 #input
 {
     padding: 2px 2px;
-
 }
 
 #controlTable
@@ -380,7 +383,7 @@ html, body
     margin: 0;
     padding: 0;
     overflow: hidden;
-    width: 100%;
+    width: 110%;
     list-style-type: none;
     margin: auto;
     white-space: nowrap;
@@ -395,26 +398,27 @@ html, body
     font-size: 16px;
     background-color: #444444;
     border-bottom: 1.5px solid #282828;
+    -webkit-transition: ease-in-out all .2s;
 }
 
 #resourceTree li:hover
 {
-    background-color: #222222;
-    -webkit-transition: ease-in-out all .2s;
+    background-color: #151515;
 }
 
 #resourceTree li.active
 {
-    background-color: #333333
+    background-color: #333333;
 }
 
-#resourceTree .album
+#resourceTree .album:not(.hidden), #resourceTree .setting:not(.hidden)
 {
     background-color: #777777;
     border-bottom: 1.5px solid #333333;
+    display:block;
 }
 
-#resourceTree .album:hover
+#resourceTree .album:hover, #resourceTree .setting:hover
 {
     background-color: #555555;
 }
@@ -424,14 +428,15 @@ html, body
     background-color: #5D5D5D;
 }
 
-#resourceTree .song
+#resourceTree .song:not(.hidden), #resourceTree .sort:not(.hidden)
 {
     color: black;
     background-color: #CCCCCC;
     border-bottom: 1.5px solid #333333;
+    display: block;
 }
 
-#resourceTree .song:hover
+#resourceTree .song:hover, #resourceTree .sort:hover
 {
     background-color: #999999;
 }

@@ -1,6 +1,8 @@
 'use strict';
 
 const SKIP_DEPLAY = 3;
+// instead of console.loging, I call log which calls console.log but first checks this variable
+const debugging = true;
 
 var jsmediatags = require("jsmediatags");
 //var io = require('socket.io')(8989);
@@ -30,6 +32,7 @@ var autoplay = false;
 var repeat = false;
 var songs = [];
 var priorSongs = [];
+var volume;
 
 // Other Variables
 var asyncCalls = 0;
@@ -43,8 +46,12 @@ function startup()
     loadMusic(__dirname + "/res/");
 
     $("#library").css("display", "block");
+    resizeWindow();
     loadLibrary();
 }
+
+var to = 0;
+var tf = 0;
 
 /**
  *  Loads the music from the filesystem. Music is located in
@@ -87,6 +94,7 @@ function loadMusic(dir)
         })();
       });
     };
+    to = performance.now();
     walk(dir, function(err, results)
     {
         if (err) throw err;
@@ -106,16 +114,16 @@ function loadMusic(dir)
                                               tag.tags.album,
                                               tag.tags.title,
                                               path);
-
                             asyncCalls--;
                             if(asyncCalls == 0)
                                 setupLibraryPane();
                         },
                         onError: function(error)
                         {
-                            console.log(':(', error.type, error.info);
+                            log(':(', error.type, error.info);
                         },
                     });
+
                 })(results[i]);
             }
         }
@@ -161,7 +169,11 @@ function loadLibrary()
  */
 function setupLibraryPane()
 {
-    collection.log();
+    tf = performance.now();
+    log('Took ', (tf - to).toFixed(4), 'milliseconds to generate the colllection ', collection);
+
+    var t0 = performance.now();
+
     // At this point, the async  process has called back...
     // so the collection can be written.
     createManifest();
@@ -172,30 +184,39 @@ function setupLibraryPane()
         // Created li element for artists:
         // <li id="<Artist_Name>" onclick="showArtists(this)">Artist Name</li>
         baseList.append('<li id="' + artists[i].split(' ').join('_') +
+                        '" class="artist' +
                         '" onclick="showAlbums(this)">'+artists[i]+'</li>');
         var albums = collection.get(artists[i], 1);
         for(var j = 0; j < albums.length; j++)
         {
         //Created li element for albums:
-        // <li class="album hidden <Artist_Name>" id="<Album_Name>"
+        // <li class="album hidden <Artist_Name>" id="<Album_Name>_<Artist_Name>"
         //                              onclick="showSongs(this)">Album Name</li>
 
             baseList.append('<li class="album hidden ' +
                             artists[i].split(' ').join('_') +
-                            '" id="' + albums[j].split(' ').join('_') +
+                            '" id="' + albums[j].split(' ').join('_') + "_" + artists[i].split(' ').join('_') +
                             '" onclick="showSongs(this)">' +
                             albums[j] + '</li>');
-            var songs = collection.get(albums[j], 2);
+            var songs = collection.getSongsSecure(artists[i], albums[j]);
+
             for(var k = 0; k < songs.length; k++)
             {
+                // Created li element for songs:
+                // <li id="<song_name>" class="song hidden <album_name>_<artist_name>"
+                //                            onclick="addtoPlayList(this)">Song Name</li>
                 baseList.append('<li id="' + songs[k].split(' ').join('_') +
-                                '" class="song hidden ' + albums[j].split(' ').join('_') +
+                                '" class="song hidden ' +
+                                albums[j].split(' ').join('_') + "_" + artists[i].split(' ').join('_') +
                                 '" onclick="addToPlaylist(this)">' +
                                 songs[k] + '</li>');
             }
         }
     }
-    console.log(baseList);
+
+    var t1 = performance.now();
+    log('Took ', (t1 - t0).toFixed(4), ' more milliseconds to generate the library', baseList);
+    $("#librarySettings").text("Library Options");
 }
 
 /**
@@ -203,13 +224,21 @@ function setupLibraryPane()
  */
 function showAlbums(origin)
 {
-    //console.log($("." + origin.getAttribute('id')));
+    if($(document.getElementById(origin.getAttribute('id'))).hasClass('active'))
+    {
+        $("#resourceTree .album").addClass('hidden');
+        $("#resourceTree .song").addClass('hidden');
+        $("#resourceTree .active").removeClass('active');
+        return;
+    }
+    $("#resourceTree .setting").addClass('hidden');
+    $("#resourceTree .sort").addClass('hidden');
     $('#resourceTree .album').addClass('hidden');
+    $("#resourceTree .song").addClass('hidden');
+
     $('#resourceTree .active').removeClass('active');
     $(document.getElementById(origin.getAttribute('id'))).addClass('active');
     $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
-    $("#resourceTree .song").addClass('hidden');
-
 }
 
 /**
@@ -217,10 +246,55 @@ function showAlbums(origin)
  */
 function showSongs(origin)
 {
+    if($(document.getElementById(origin.getAttribute('id'))).hasClass('active'))
+    {
+        $("#resourceTree .song").addClass('hidden');
+        $(document.getElementById(origin.getAttribute('id'))).removeClass('active');
+        return;
+    }
     $("#resourceTree .song").addClass('hidden');
     $("#resourceTree .album.active").removeClass('active');
     $(document.getElementById(origin.getAttribute('id'))).addClass('active');
     $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+}
+
+function showSortSettings(origin)
+{
+    $("#resourceTree .sort").removeClass("hidden");
+}
+
+/**
+ *  Sorts the music by the parameter
+ *  @param {sort} string - value to sort by
+ *              album - sorts by album
+ *              artist - sorts by artist
+ *              song - sorts by songname
+ */
+function sortBy(sort)
+{
+    if(sort == 'album')
+    {
+        $("#resourceTree .artist").addClass('hidden');
+        var albums = $("#resourceTree .album");
+        albums.removeClass('hidden');
+        log(albums);
+        //sortLiElementsByID(albums);
+        log(albums);
+    }
+}
+
+/**
+ * quicksort to sort the li's alphabetically
+ */
+function sortLiElementsByID(elements, low, high)
+{
+    var pivot = elements.length / 2;
+
+}
+
+function partition(array, low, high)
+{
+
 }
 
 /**
@@ -229,8 +303,10 @@ function showSongs(origin)
 function addToPlaylist(origin)
 {
     // Relies on the song name being in the text of the origin...
+    // Might be safe to use most of the time?
     var collectionData = collection.get(origin.textContent, 3);
-    console.log(collectionData);
+    if(!collectionData) return log("unexpected crazy error with " + origin.textcontent);
+    log(collectionData);
 
     songs.push(new SongData(collectionData[0],
         collectionData[0].substring(collectionData[0].length-3,
@@ -239,17 +315,31 @@ function addToPlaylist(origin)
             collectionData[2],
             collectionData[1]));
 
-    console.log(songs);
+    log(songs);
     if(songs.length == 1)
         initSong(songs[0]);
-
-    $("#playList").append('<li>' + collectionData[3] +
+    else
+        $("#playList").append('<li>' + collectionData[3] +
                             ", " + collectionData[1] + '</li>');
+}
+
+function showSettings(origin)
+{
+    // Hide Stuff
+    $("#resourceTree .active").removeClass('active');
+    $("#resourceTree .album.active").removeClass('acitve');
+    $("#resourceTree .sort").addClass('hidden');
+    $('#resourceTree .album').addClass('hidden');
+    $("#resourceTree .song").addClass('hidden');
+
+
+    // Show settings
+    $("#resourceTree .setting").removeClass("hidden");
 }
 
 $(document).bind("mousedown", function(e)
 {
-    console.log("doink");
+    log("doink");
 });
 /**
  *  Iterates over songs[] immediately after the library
@@ -261,7 +351,7 @@ function createManifest()
     fs.writeFile("app/data/manifest.json", JSON.stringify(collection),
         function(err)
         {
-            if(err) console.log("error writing manifest.json");
+            if(err) log("error writing manifest.json");
         });
 }
 
@@ -296,7 +386,7 @@ function initSong(song)
         },
         onError: function(error)
         {
-            console.log(':(', error.type, error.info);
+            log(':(', error.type, error.info);
         },
     });
     if(song.type == 'mp3')
@@ -312,6 +402,7 @@ function initSong(song)
 function getCoverArt(tag)
 {
     var image = tag.tags.picture;
+    //console.log(image);
     /* If the image exists, create the base64 image from the data and display it*/
     if(image)
     {
@@ -342,11 +433,13 @@ function getCoverArt(tag)
             changeArt("imgs/cover_art/rockCoverArt.png");
         else if(genreName != 'none')
         {
-            console.log("unhandled genre without art: " + genreName);
+            log("unhandled genre without art: " + genreName);
             changeArt("imgs/cover_art/unknownArt.jpg");
         }
         else
+        {
             changeArt("imgs/cover_art/unknownArt.jpg");
+        }
     }
 }
 
@@ -382,6 +475,12 @@ function initMP3(song)
         play: function()
         {
             autoplay = true;
+            if(volume)
+                $(this).jPlayer('option', 'volume', volume);
+        },
+        volumechange: function(event)
+        {
+            volume = event.jPlayer.options.volume;
         },
         ended: function()
         {
@@ -416,6 +515,12 @@ function initM4A(song)
         play: function()
         {
             autoplay = true;
+            if(volume)
+                $(this).jPlayer('option', 'volume', volume);
+        },
+        volumechange: function(event)
+        {
+            volume = event.jPlayer.options.volume;
         },
         ended: function()
         {
@@ -436,7 +541,7 @@ function initM4A(song)
 // Switch channels
 $(".channel").mousedown(function(event)
 {
-    console.log("hey");
+    log("hey");
     if(event.which == 3)
     {
         alert("Right Click - channel options");
@@ -467,7 +572,11 @@ function resizeWindow()
     $("#col2").width($(window).width() - 500);
     $("#chatbox").width($(window).width() - 550);
     $("#chatbox").height($(window).height() - 150);
+    $("#library").height($(window).height() - 60);
     $("#input").width($(window).width() - 540);
+    $("#playListScroll").height($(window).height() - 500);
+    $("#libraryScroll").height($(window).height() - 60);
+
     if($(window).height() == 28)
     {
         miniplayer = true;
@@ -540,6 +649,7 @@ function nextSong()
         $("#jquery_jplayer_1").jPlayer("destroy");
         if(!repeat)
         {
+            if(priorSongs.length > 16) priorSongs.shift();
             priorSongs.push(songs.shift());
         }
             initSong(songs[0]);
@@ -561,6 +671,8 @@ function prevSong()
         if(priorSongs.length > 0)
         {
             songs.unshift(priorSongs.pop());
+            $("#playList li:eq(0)").after('<li>' + songs[1].name +
+                                ", " + songs[1].artist + '</li>');
         }
 
         if(songs.length > 0)
@@ -571,10 +683,16 @@ function prevSong()
 function toggleRepeat()
 {
     repeat = !repeat;
-    console.log("repeat: " + repeat);
+    log("repeat: " + repeat);
 }
 
 function toggleAutoPlay()
 {
     autoplay = !autoplay;
+}
+
+function log(param)
+{
+    if(debugging)
+        console.log(param);
 }

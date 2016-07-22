@@ -9,6 +9,7 @@
   "author": "Josh Mackin",
   "license": "ISC",
   "devDependencies": {
+    "electron-packager": "^7.3.0",
     "electron-prebuilt": "^1.2.7"
   }
 }

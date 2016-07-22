@@ -34,6 +34,7 @@ Tree.prototype.log = function()
             console.log("============");
         }
     }
+    console.log(this);
 }
 
 Tree.prototype.addAll = function(artist, album, song, path)
@@ -76,7 +77,10 @@ Tree.prototype.addAll = function(artist, album, song, path)
 /**
  *  Gets all items of certain depth in the Tree
  *  note: O(n) for depth 0 but higher degrees for higher depths
+ *  functionailty note: only depth of 0 and 1 coded.
  *  @param {number} depth - the depth of the items to search for
+ *                  0 -- artists
+ *                  1 -- albums
  *  @return {array} the set of items at that depth
  */
 Tree.prototype.getDepth = function(depth)
@@ -154,6 +158,39 @@ Tree.prototype.get = function(id, level)
     }
     return collection;
 }
+
+/**
+ *  As some albums have different artists because they're a collection
+ *  this function will securely get a song based on the artist and album
+ */
+Tree.prototype.getSongsSecure = function(artist, album)
+{
+    var tree = this.branches;
+    var collection = [];
+    // for all of the artists
+    for(var i = 0; i < tree.length; i++)
+    {
+        // if an artist matches the id
+        if(tree[i].item == artist)
+        {
+            // for all of the albums
+            for(var j = 0; j < tree[i].branches.length; j++)
+            {
+                // if the album matches the id
+                if(tree[i].branches[j].item == album)
+                {
+                    // get all of that albums songs
+                    collection = getBranchItems(tree[i].branches[j].branches);
+                    if(debugging)console.log(collection);
+                    break;
+                }
+            }
+        }
+    }
+    return collection;
+}
+
+
 
 /**
  *  Gets the items off of a certain branch.
