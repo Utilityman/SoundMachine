@@ -17,9 +17,8 @@ function createWindow()
         resizable: true,
         minHeight: 28,
         minWidth: 500,
-        alwaysOnTop: true,
+        alwaysOnTop: false,
     });
-
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 

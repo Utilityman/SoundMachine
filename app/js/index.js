@@ -3,11 +3,13 @@
 /* TODO: about:blank error
     from node_modules/jplayer/dist/jplayer/jquery.jplayer.js line 2957
     solution: delete line
+    TODO next: Library colors, library sorts, add to library
+    TODO: move the frame again
 */
 
 const SKIP_DEPLAY = 3;
 // instead of console.loging, I call log which calls console.log but first checks this variable
-//const debugging = true;
+const logging = true;
 
 var jsmediatags = require("jsmediatags");
 //var io = require('socket.io')(8989);
@@ -55,9 +57,6 @@ function startup()
     loadLibrary();
 }
 
-var to = 0;
-var tf = 0;
-
 /**
  *  Loads the music from the filesystem. Music is located in
  *  the app/res directory. Once the paths to the music files are
@@ -99,7 +98,6 @@ function loadMusic(dir)
         })();
       });
     };
-    to = performance.now();
     walk(dir, function(err, results)
     {
         if (err) throw err;
@@ -125,7 +123,7 @@ function loadMusic(dir)
                         },
                         onError: function(error)
                         {
-                            log(':(', error.type, error.info);
+                            console.log(':(', error.type, error.info);
                         },
                     });
 
@@ -174,11 +172,6 @@ function loadLibrary()
  */
 function setupLibraryPane()
 {
-    tf = performance.now();
-    log('Took ', (tf - to).toFixed(4), 'milliseconds to generate the colllection ', collection);
-
-    var t0 = performance.now();
-
     // At this point, the async  process has called back...
     // so the collection can be written.
     createManifest();
@@ -219,8 +212,6 @@ function setupLibraryPane()
         }
     }
 
-    var t1 = performance.now();
-    log('Took ', (t1 - t0).toFixed(4), ' more milliseconds to generate the library', baseList);
     $("#librarySettings").text("Library Options");
 }
 
@@ -269,7 +260,7 @@ function showSortSettings(origin)
 }
 
 /**
- *  Sorts the music by the parameter
+ *  Sorts the music by the parameter and displays the sorted elements
  *  @param {sort} string - value to sort by
  *              album - sorts by album
  *              artist - sorts by artist
@@ -282,9 +273,9 @@ function sortBy(sort)
         $("#resourceTree .artist").addClass('hidden');
         var albums = $("#resourceTree .album");
         albums.removeClass('hidden');
-        log(albums);
+        console.log(albums);
         //sortLiElementsByID(albums);
-        log(albums);
+        console.log(albums);
     }
 }
 
@@ -310,8 +301,8 @@ function addToPlaylist(origin)
     // Relies on the song name being in the text of the origin...
     // Might be safe to use most of the time?
     var collectionData = collection.get(origin.textContent, 3);
-    if(!collectionData) return log("unexpected crazy error with " + origin.textcontent);
-    log(collectionData);
+    if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
+    console.log(collectionData);
 
     songs.push(new SongData(collectionData[0],
         collectionData[0].substring(collectionData[0].length-3,
@@ -320,7 +311,7 @@ function addToPlaylist(origin)
             collectionData[2],
             collectionData[1]));
 
-    log(songs);
+    //console.log(songs);
     if(songs.length == 1)
         initSong(songs[0]);
     else
@@ -337,14 +328,13 @@ function showSettings(origin)
     $('#resourceTree .album').addClass('hidden');
     $("#resourceTree .song").addClass('hidden');
 
-
     // Show settings
     $("#resourceTree .setting").removeClass("hidden");
 }
 
 $(document).bind("mousedown", function(e)
 {
-    log("doink");
+    console.log("doink");
 });
 /**
  *  Iterates over songs[] immediately after the library
@@ -356,7 +346,7 @@ function createManifest()
     fs.writeFile("app/data/manifest.json", JSON.stringify(collection),
         function(err)
         {
-            if(err) log("error writing manifest.json");
+            if(err) console.log("error writing manifest.json");
         });
 }
 
@@ -391,7 +381,7 @@ function initSong(song)
         },
         onError: function(error)
         {
-            log(':(', error.type, error.info);
+            console.log(':(', error.type, error.info);
         },
     });
     if(song.type == 'mp3')
@@ -438,7 +428,7 @@ function getCoverArt(tag)
             changeArt("imgs/cover_art/rockCoverArt.png");
         else if(genreName != 'none')
         {
-            log("unhandled genre without art: " + genreName);
+            console.log("unhandled genre without art: " + genreName);
             changeArt("imgs/cover_art/unknownArt.jpg");
         }
         else
@@ -546,7 +536,7 @@ function initM4A(song)
 // Switch channels
 $(".channel").mousedown(function(event)
 {
-    log("hey");
+    console.log("hey");
     if(event.which == 3)
     {
         alert("Right Click - channel options");
@@ -688,16 +678,10 @@ function prevSong()
 function toggleRepeat()
 {
     repeat = !repeat;
-    log("repeat: " + repeat);
+    console.log("repeat: " + repeat);
 }
 
 function toggleAutoPlay()
 {
     autoplay = !autoplay;
-}
-
-function log(param)
-{
-    if(debugging)
-        console.log(param);
 }
