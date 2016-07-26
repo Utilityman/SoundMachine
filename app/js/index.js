@@ -12,7 +12,6 @@ const SKIP_DEPLAY = 3;
 const logging = true;
 
 var jsmediatags = require("jsmediatags");
-//var io = require('socket.io')(8989);
 var fs = require('fs');
 var path = require('path');
 var genreData = require('./data/genre.json');
@@ -33,6 +32,7 @@ var collection = new Tree();
 // Window Variables
 var miniplayer = false;
 var miniplayerElementIndex = 0;
+var libraryMode = 'artist';
 
 // Music Player Variables
 var autoplay = false;
@@ -163,6 +163,59 @@ function loadLibrary()
 }
 
 /**
+ *  Show functions adhere to the the libraryMode in what
+ *  they hide and show with the three diferent modes being
+ *      'artist': top-level elements. Clicking these
+                  will show the albums that belong to that
+                  artist. This is sortable and ommitable
+        'album': second-level elements. Clicking these
+                 will show the songs that belong to the album.
+                 This is sortable and ommitable.
+        'song':  third-level elements. Clicking these will
+                 queue the song to the queue! These are sortable
+                 but not ommitable
+        TODO: Show only artists/songs (skip albums)
+
+        This method is meant to show what one of the many
+        show functions is supposed to look like. Each mode
+        is mostly designed so that messing around with settings
+        don't begin hiding or showing the wrong things. this way
+        also helps facilitate better code in-that someone reading
+        these modes can easily see which switches are flipping
+        on and off.
+ */
+function showFunctions()
+{
+    return 'dont-call-me';
+    if($("#this").hasClass('active'))
+    {
+        // Handle collapsing the current thing
+        // No other external fields should change
+        return;
+    }
+    if(libraryMode == 'song')
+    {
+        // If the mode is currently preferring the song,
+        // albums and artist will be hidden and all that needs
+        // to be done is to add the song to the playList
+    }
+    else if(libraryMode == 'album')
+    {
+        // If the mode is currently preferring the album,
+        // only artists are hidden. Album mode need to handle
+        // showing album contents and setting the albums
+        // to be toggled as 'active'.
+    }
+    else if(libraryMode == 'artist')
+    {
+        // If the mode is currently preferring the artist,
+        // everything is shown. Artist mode needs to handle
+        // setting both albums and artists as active fields.
+    }
+
+}
+
+/**
  *  This function gets called once all of the async jsmediatags finish.
  *  It utilizes the collection (which is a tree of all of the tracks)
  *  to create li's in the resourceTree for the user to interact with.
@@ -175,13 +228,14 @@ function setupLibraryPane()
     // At this point, the async  process has called back...
     // so the collection can be written.
     createManifest();
+    var splitRegex = /[\s|/|(|)|&|'|\[|\]|!]/;
     var baseList = $("#resourceTree");
     var artists = collection.getDepth(0);
     for(var i = 0; i < artists.length; i++)
     {
         // Created li element for artists:
         // <li id="<Artist_Name>" onclick="showArtists(this)">Artist Name</li>
-        baseList.append('<li id="' + artists[i].split(' ').join('_') +
+        baseList.append('<li id="' + artists[i].split(splitRegex).join('_') +
                         '" class="artist' +
                         '" onclick="showAlbums(this)">'+artists[i]+'</li>');
         var albums = collection.get(artists[i], 1);
@@ -192,8 +246,8 @@ function setupLibraryPane()
         //                              onclick="showSongs(this)">Album Name</li>
 
             baseList.append('<li class="album hidden ' +
-                            artists[i].split(' ').join('_') +
-                            '" id="' + albums[j].split(' ').join('_') + "_" + artists[i].split(' ').join('_') +
+                            artists[i].split(splitRegex).join('_') +
+                            '" id="' + albums[j].split(splitRegex).join('_') + "_" + artists[i].split(splitRegex).join('_') +
                             '" onclick="showSongs(this)">' +
                             albums[j] + '</li>');
             var songs = collection.getSongsSecure(artists[i], albums[j]);
@@ -203,9 +257,9 @@ function setupLibraryPane()
                 // Created li element for songs:
                 // <li id="<song_name>" class="song hidden <album_name>_<artist_name>"
                 //                            onclick="addtoPlayList(this)">Song Name</li>
-                baseList.append('<li id="' + songs[k].split(' ').join('_') +
+                baseList.append('<li id="' + songs[k].split(splitRegex).join('_') +
                                 '" class="song hidden ' +
-                                albums[j].split(' ').join('_') + "_" + artists[i].split(' ').join('_') +
+                                albums[j].split(splitRegex).join('_') + "_" + artists[i].split(splitRegex).join('_') +
                                 '" onclick="addToPlaylist(this)">' +
                                 songs[k] + '</li>');
             }
@@ -216,7 +270,7 @@ function setupLibraryPane()
 }
 
 /**
- *  Artist onclick event. This shows the albums taht belong to the artist
+ *  Artist onclick event. This shows the albums that belong to the artist
  */
 function showAlbums(origin)
 {
@@ -227,14 +281,31 @@ function showAlbums(origin)
         $("#resourceTree .active").removeClass('active');
         return;
     }
-    $("#resourceTree .setting").addClass('hidden');
-    $("#resourceTree .sort").addClass('hidden');
-    $('#resourceTree .album').addClass('hidden');
-    $("#resourceTree .song").addClass('hidden');
+    if(libraryMode == 'song')
+    {
+        // If an album is clicked somehow while in song preferring,
+        // Make sure albums and artists are hidden...
+        $("#resourceTree .album").addClass('hidden');
+        $("#rsourceTree .artist").addClass('hidden');
+    }
+    else if(libraryMode == 'album')
+    {
+        // This again, shouldn't be called but in case it is,
+        // Just hide all of the artists.
+        $("#resourceTree .artist").addClass('hidden');
+    }
+    else if(libraryMode == 'artist')
+    {
+        $("#resourceTree .setting").addClass('hidden');
+        $("#resourceTree .sort").addClass('hidden');
+        $('#resourceTree .album').addClass('hidden');
+        $("#resourceTree .song").addClass('hidden');
 
-    $('#resourceTree .active').removeClass('active');
-    $(document.getElementById(origin.getAttribute('id'))).addClass('active');
-    $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+        $('#resourceTree .active').removeClass('active');
+        $(document.getElementById(origin.getAttribute('id'))).addClass('active');
+        $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+    }
+
 }
 
 /**
@@ -270,27 +341,45 @@ function sortBy(sort)
 {
     if(sort == 'album')
     {
+        console.log($("#resourceTree"));
         $("#resourceTree .artist").addClass('hidden');
         var albums = $("#resourceTree .album");
         albums.removeClass('hidden');
-        console.log(albums);
-        //sortLiElementsByID(albums);
-        console.log(albums);
+        sortLi(albums);
+        for(var i = albums.length - 1; i >= 0; i--)
+        {
+            $("#resourceTree li:eq(6)").after(albums[i]);
+        }
+        for(var i = 0; i < albums.length; i++)
+        {
+            var songs = $(document.getElementsByClassName(albums[i].id));
+            for(var j = 0; j < 2; j++)
+                $(albums[i]).after(songs[j]);
+        }
+        console.log($("#resourceTree"));
     }
 }
 
-/**
- * quicksort to sort the li's alphabetically
- */
-function sortLiElementsByID(elements, low, high)
+// TODO: Switch to quicksort
+function sortLi(elements)
 {
-    var pivot = elements.length / 2;
+    for(var i = 0; i < elements.length; i++)
+    {
+        //var min = elements[i];
+        var replaceIndex = i;
+        for(var j = i; j < elements.length; j++)
+        {
+            if(elements[replaceIndex].id > elements[j].id)
+            {
+                replaceIndex = j;
+            }
+        }
 
-}
+        var temp = elements[i];
+        elements[i] = elements[replaceIndex];
+        elements[replaceIndex] = temp;
 
-function partition(array, low, high)
-{
-
+    }
 }
 
 /**
@@ -321,9 +410,17 @@ function addToPlaylist(origin)
 
 function showSettings(origin)
 {
-    // Hide Stuff
+
+    if($("#librarySettings").hasClass('active'))
+    {
+        $("#resourceTree .setting").addClass('hidden');
+        $("#resourceTree .sort").addClass('hidden');
+        $("#librarySettings").removeClass('active');
+        return;
+    }
     $("#resourceTree .active").removeClass('active');
     $("#resourceTree .album.active").removeClass('acitve');
+    $("#librarySettings").addClass('active');
     $("#resourceTree .sort").addClass('hidden');
     $('#resourceTree .album').addClass('hidden');
     $("#resourceTree .song").addClass('hidden');
