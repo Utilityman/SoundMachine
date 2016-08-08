@@ -12,12 +12,13 @@ function createWindow()
     mainWindow = new BrowserWindow(
     {
         frame: false,
+        titleBarStyle: 'hidden',
         height: 600,
         width: 808,
-        resizable: true,
+        //resizable: true,
         minHeight: 28,
         minWidth: 500,
-        alwaysOnTop: false,
+        //alwaysOnTop: false,
     });
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');

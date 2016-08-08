@@ -7,9 +7,9 @@
     TODO: move the frame again
 */
 
-const SKIP_DEPLAY = 3;
 // instead of console.loging, I call log which calls console.log but first checks this variable
 const logging = true;
+const SETTING_ELE_COUNT = 6;
 
 var jsmediatags = require("jsmediatags");
 var fs = require('fs');
@@ -34,12 +34,14 @@ var miniplayer = false;
 var miniplayerElementIndex = 0;
 var libraryMode = 'artist';
 
-// Music Player Variables
+// Music Player
+var jukebox = null;
+
+
 var autoplay = false;
 var repeat = false;
 var songs = [];
 var priorSongs = [];
-var volume;
 
 // Other Variables
 var asyncCalls = 0;
@@ -50,6 +52,7 @@ var asyncCalls = 0;
  */
 function startup()
 {
+    jukebox = new Jukebox();
     loadMusic(__dirname + "/res/");
 
     $("#library").css("display", "block");
@@ -348,7 +351,7 @@ function sortBy(sort)
         sortLi(albums);
         for(var i = albums.length - 1; i >= 0; i--)
         {
-            $("#resourceTree li:eq(6)").after(albums[i]);
+            $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(albums[i]);
         }
         for(var i = 0; i < albums.length; i++)
         {
@@ -393,24 +396,16 @@ function addToPlaylist(origin)
     if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
     console.log(collectionData);
 
-    songs.push(new SongData(collectionData[0],
+    jukebox.insert(new SongData(collectionData[0],
         collectionData[0].substring(collectionData[0].length-3,
             collectionData[0].length),
             collectionData[3],
             collectionData[2],
             collectionData[1]));
-
-    //console.log(songs);
-    if(songs.length == 1)
-        initSong(songs[0]);
-    else
-        $("#playList").append('<li>' + collectionData[3] +
-                            ", " + collectionData[1] + '</li>');
 }
 
 function showSettings(origin)
 {
-
     if($("#librarySettings").hasClass('active'))
     {
         $("#resourceTree .setting").addClass('hidden');
@@ -459,83 +454,6 @@ function openTab(ele, tabName)
 }
 
 /**
- *  Initializes a song object
- *  Songs have paths, and types
- */
-function initSong(song)
-{
-    if(!song) return;
-    jsmediatags.read(song.path,
-    {
-        onSuccess: function(tag)
-        {
-            $("#songArtistAlbum").text(song.name + ", " +
-                                       song.artist + " on " +
-                                       song.album);
-            $(".channel.active").children().text(song.name + " by " +
-                                                    song.artist);
-            getCoverArt(tag);
-        },
-        onError: function(error)
-        {
-            console.log(':(', error.type, error.info);
-        },
-    });
-    if(song.type == 'mp3')
-        initMP3(song)
-    else if(song.type =='m4a')
-        initM4A(song);
-}
-
-/**
- *  Gets the cover art and puts it in #coverArt
- *  Also handles cases where the cover art doesn't exist
- */
-function getCoverArt(tag)
-{
-    var image = tag.tags.picture;
-    //console.log(image);
-    /* If the image exists, create the base64 image from the data and display it*/
-    if(image)
-    {
-        var base64String = "";
-        for(var i = 0; i < image.data.length; i++)
-        {
-            base64String += String.fromCharCode(image.data[i]);
-        }
-        var base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
-        changeArt(base64);
-        //return base64;
-    }
-    else /* This handles when the image data isn't available*/
-    {
-        var genreName = "none";
-        if(tag.tags.genre)
-        {
-            genreName = tag.tags.genre;
-        }
-        else if(tag.tags.gnre)
-        {
-            if(genreData[tag.tags.gnre.data])
-            {
-                genreName = genreData[tag.tags.gnre.data];
-            }
-        }
-        if(genreName == 'ROCK')
-            changeArt("imgs/cover_art/rockCoverArt.png");
-        else if(genreName != 'none')
-        {
-            console.log("unhandled genre without art: " + genreName);
-            changeArt("imgs/cover_art/unknownArt.jpg");
-        }
-        else
-        {
-            changeArt("imgs/cover_art/unknownArt.jpg");
-        }
-    }
-}
-
-/**
  *  Changes which image is active/inactive which fades in the new image
  *  TODO: Gotta fix it
  */
@@ -549,85 +467,6 @@ function changeArt(src)
     //inactiveImage.addClass("active");
     //activeImage.removeClass("active");
     //activeImage.addClass("inactive");
-}
-
-function initMP3(song)
-{
-    $("#jquery_jplayer_1").jPlayer({
-        ready: function()
-        {
-            $(this).jPlayer("setMedia",
-            {
-                mp3: song.path,
-            });
-
-            if(autoplay)
-                $(this).jPlayer("play");
-        },
-        play: function()
-        {
-            autoplay = true;
-            if(volume)
-                $(this).jPlayer('option', 'volume', volume);
-        },
-        volumechange: function(event)
-        {
-            volume = event.jPlayer.options.volume;
-        },
-        ended: function()
-        {
-            nextSong();
-        },
-        cssSelectorAncestor: "#jp_container_1",
-        swfPath: "/js",
-        supplied: "mp3",
-        useStateClassSkin: true,
-        autoBlur: false,
-        smoothPlayBar: true,
-        keyEnabled: true,
-        remainingDuration: true,
-        toggleDuration: true,
-    });
-}
-
-function initM4A(song)
-{
-    $("#jquery_jplayer_1").jPlayer({
-        ready: function()
-        {
-            repeat = false;
-            $(this).jPlayer("setMedia",
-            {
-                m4a: song.path,
-            });
-            if(autoplay)
-                $(this).jPlayer("play");
-
-        },
-        play: function()
-        {
-            autoplay = true;
-            if(volume)
-                $(this).jPlayer('option', 'volume', volume);
-        },
-        volumechange: function(event)
-        {
-            volume = event.jPlayer.options.volume;
-        },
-        ended: function()
-        {
-            nextSong();
-        },
-        cssSelectorAncestor: "#jp_container_1",
-        swfPath: "/js",
-        supplied: "m4a",
-        useStateClassSkin: true,
-        autoBlur: false,
-        smoothPlayBar: true,
-        keyEnabled: true,
-        remainingDuration: true,
-        toggleDuration: true,
-    });
 }
 
 // Switch channels
@@ -750,7 +589,7 @@ function nextSong()
 
 function prevSong()
 {
-    if($("#jquery_jplayer_1").data("jPlayer") && $("#jquery_jplayer_1").data("jPlayer").status.currentTime > SKIP_DEPLAY)
+    if($("#jquery_jplayer_1").data("jPlayer") && $("#jquery_jplayer_1").data("jPlayer").status.currentTime > SKIP_DELAY)
     {
         $("#jquery_jplayer_1").jPlayer("destroy");
 
@@ -770,15 +609,4 @@ function prevSong()
         if(songs.length > 0)
             initSong(songs[0]);
     }
-}
-
-function toggleRepeat()
-{
-    repeat = !repeat;
-    console.log("repeat: " + repeat);
-}
-
-function toggleAutoPlay()
-{
-    autoplay = !autoplay;
 }
