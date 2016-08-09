@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Sound Machine</title>
     <link href="css/style.css" rel="stylesheet" type="text/css"/>
+    <link href="css/jukebox.css" rel="stylesheet" type="text/css"/>
+
     <!-- blue player is pulled out because I have some of the elements modified-->
     <link href="css/blue.monday/css/jplayer.blue.monday.css" rel="stylesheet" type="text/css" />
 
@@ -15,6 +17,7 @@
     <script type="text/javascript" scr="../node_modules/jplayer/dist/jplayer/jquery.jplayer.swf"></script>
 
     <script type="text/javascript" src="js/tree.js"></script>
+    <script type='text/javascript' src='js/color-thief.min.js'></script>
     <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/jukebox.js"></script>
 
@@ -54,19 +57,29 @@
             <p id="songArtistAlbum"></p>
             <div id="imageBuffer">
                 <img src="" class="coverArt inactive">
-                <img src="imgs/discIcon.png" class="coverArt active">
+                <img src="imgs/discIcon.png" id='activeCoverArt' class="coverArt active">
             </div>
 
-    <div id="playListPanel">
-        <div id="playListScroll">
-            <ul id="playList">
-                <li class="smallHeight">Up Next</li>
-            </ul>
+            <div id='jukeboxControls'>
+                <div id='skipBack' onclick='skipBack()' class='skipback invert hoverable'></div>
+                <div id='skipForward' onclick='skipForward()' class='skipForward invert hoverable'></div>
+                <div class="progress" id="progress">
+                    <div onclick='playControl()' class='play invert hoverable' id='playControl'></div>
+                </div>
+                <div class='volume' id='volume'>
+                    <div id='lowerVolume' class='volumeModifier' onclick='lowerVolume()'>-</div>
+                    <div id='raiseVolume' class='volumeModifier' onclick='raiseVolume()'>+</div>
+                </div>
+            </div>
+            <div id="playListPanel">
+                <div id="playListScroll">
+                    <ul id="playList">
+                        <li class="smallHeight">Up Next</li>
+                    </ul>
+                </div>
+            </div>
+        <!--<div id="nowPlaying">-->
         </div>
-    </div>
-
-
-<!--<div id="nowPlaying">--></div>
 
     </div></div>
     <div id="col2">

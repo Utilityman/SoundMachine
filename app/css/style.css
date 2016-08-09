@@ -152,92 +152,6 @@ html, body
     opacity: 0;
 }
 
-.coverArt
-{
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    padding: 0;
-    line-height: 0;
-    margin-left: 25px;
-    background-color: black;
-    transition:opacity 1s linear;
-    opacity: 1;
-}
-
-#playListPanel
-{
-    width: 350px;
-    //height: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-#playListScroll, #libraryScroll
-{
-    width: 100%;
-    padding-right: 15px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-#playList
-{
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    width: 350px;
-    margin-top: 8px;
-    white-space: nowrap;
-    text-align: center;
-    background: linear-gradient(to bottom, #494949 0%,#5d5d5d 50%,#494949 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    color: #FFF;
-}
-
-#playList li
-{
-    padding: 6px 4px;
-    width: 100%;
-    border-bottom: 1.5px solid #555555;
-}
-
-#playList li:first-child
-{
-    background-color: #5D5D5D;
-    line-height: 12px;
-    border-top: 1.5px solid #555555;
-}
-
-#playList li:first-child:hover
-{
-    background-color: #5D5D5D;
-}
-
-#playList li:hover
-{
-    background-color: #494949;
-}
-
-#songArtistAlbum
-{
-    margin-bottom: 0;
-    width: 95%;
-    text-align: center;
-    font-size: 14px; font-weight: 200;
-    color: lightgray;
-    margin-top: -8px;
-    padding: 4px 4px;
-}
-
-#musicControls
-{
-    margin-top: 15px;
-    margin-left: 100px;
-    width: 100px;
-    height: 100px;
-}
-
 #channelUsers table
 {
     background-color: #666699;
@@ -496,6 +410,3 @@ html, body
 {
     display: none;
 }
-
-/* Image filters */
-.invert {-webkit-filter: invert(100%); filter: invert(100%);}

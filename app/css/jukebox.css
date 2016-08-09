@@ -1,0 +1,171 @@
+
+#jukeboxControls
+{
+    width: 350px;
+    border: 0;
+}
+#playControl
+{
+    border-radius: 28px;
+    margin-left: 142px;
+    margin-top: 2px;
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    //border: .5px solid #0000FF;
+}
+
+#skipBack
+{
+    border-radius: 16px;
+    position: absolute;
+    width: 52px;
+    height: 48px;
+    //border: .5px solid #0000FF;
+    margin-top: 16px;
+    margin-left: 68px
+}
+
+#skipForward
+{
+    border-radius: 16px;
+    position: absolute;
+    width: 52px;
+    height: 48px;
+    //border: .5px solid #0000FF;
+    margin-top: 16px;
+    margin-left: 226px;
+}
+
+.play {background: url("../imgs/icons/musicIcons.png") -192px 8px no-repeat;}
+.pause{background: url('../imgs/icons/musicIcons.png') -98px 8px no-repeat; margin-left: 4px;}
+.skipback{background: url('../imgs/icons/musicIcons.png') 3px -132px no-repeat; background-size: 174px 174px}
+.skipForward{background: url('../imgs/icons/musicIcons.png') -124px -132px no-repeat; background-size: 174px 174px}
+
+.progress
+{
+    margin-top: 8px;
+    height: 75px;
+}
+
+.progress > svg
+{
+    height: 100%;
+    display: block;
+}
+
+.volume
+{
+    margin-left: 25px;
+    margin-top: -24px;
+    width: 300px;
+}
+
+.volume > svg
+{
+    height: 100%;
+    display: block;
+}
+
+#lowerVolume
+{
+    float: left;
+}
+
+#raiseVolume
+{
+    float: right;
+}
+
+#playListPanel
+{
+    width: 350px;
+    //height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#playListScroll, #libraryScroll
+{
+    width: 100%;
+    padding-right: 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#playList
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 350px;
+    margin-top: 8px;
+    white-space: nowrap;
+    text-align: center;
+    background: #494949;
+    color: #FFF;
+}
+
+#playList li
+{
+    padding: 6px 4px;
+    width: 100%;
+    border-bottom: 1.5px solid #555555;
+}
+
+#playList li:first-child
+{
+    background-color: #5D5D5D;
+    line-height: 12px;
+    border-top: 1.5px solid #555555;
+}
+
+#playList li:first-child:hover
+{
+    background-color: #5D5D5D;
+}
+
+#playList li:hover
+{
+    background-color: #494949;
+}
+
+.coverArt
+{
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    padding: 0;
+    line-height: 0;
+    margin-left: 25px;
+    background-color: black;
+    transition:opacity 1s linear;
+    opacity: 1;
+}
+
+#songArtistAlbum
+{
+    margin-bottom: 0;
+    width: 95%;
+    text-align: center;
+    font-size: 14px; font-weight: 200;
+    color: lightgray;
+    margin-top: -8px;
+    padding: 4px 4px;
+}
+
+.volumeModifier
+{
+    font-size: 30px;
+    display: inline;
+    color: white;
+    cursor: default;
+    -webkit-transition: all .3s;
+}
+
+.volumeModifier:hover{color: #AAAAAA;}
+
+/* Image filters */
+.invert {-webkit-filter: invert(100%); filter: invert(100%); }
+.invert:hover {-webkit-filter: invert(70%); filter: invert(70%);  -webkit-transition: all .3s;}

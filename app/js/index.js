@@ -35,13 +35,6 @@ var miniplayerElementIndex = 0;
 var libraryMode = 'artist';
 
 // Music Player
-var jukebox = null;
-
-
-var autoplay = false;
-var repeat = false;
-var songs = [];
-var priorSongs = [];
 
 // Other Variables
 var asyncCalls = 0;
@@ -453,22 +446,6 @@ function openTab(ele, tabName)
     $(ele).addClass("active");
 }
 
-/**
- *  Changes which image is active/inactive which fades in the new image
- *  TODO: Gotta fix it
- */
-function changeArt(src)
-{
-    var activeImage = $(".coverArt.active");
-    //var inactiveImage = $(".coverArt.inactive");
-    //console.log(activeImage.attr("src") + " " + inactiveImage.attr("src"));
-    activeImage.attr("src", src);
-    //inactiveImage.removeClass("inactive");
-    //inactiveImage.addClass("active");
-    //activeImage.removeClass("active");
-    //activeImage.addClass("inactive");
-}
-
 // Switch channels
 $(".channel").mousedown(function(event)
 {
@@ -559,54 +536,12 @@ function shuffle(array)
 
     // While there remain elements to shuffle…
     while (m) {
-
     // Pick a remaining element…
     i = Math.floor(Math.random() * m--);
-
     // And swap it with the current element.
     t = array[m];
     array[m] = array[i];
     array[i] = t;
     }
-
     return array;
-}
-
-function nextSong()
-{
-    if(songs.length > 0)
-    {
-        $("#playList li:nth-child(2)").remove();
-        $("#jquery_jplayer_1").jPlayer("destroy");
-        if(!repeat)
-        {
-            if(priorSongs.length > 16) priorSongs.shift();
-            priorSongs.push(songs.shift());
-        }
-            initSong(songs[0]);
-    }
-}
-
-function prevSong()
-{
-    if($("#jquery_jplayer_1").data("jPlayer") && $("#jquery_jplayer_1").data("jPlayer").status.currentTime > SKIP_DELAY)
-    {
-        $("#jquery_jplayer_1").jPlayer("destroy");
-
-        if(songs.length > 0)
-            initSong(songs[0]);
-    }
-    else
-    {
-        $("#jquery_jplayer_1").jPlayer("destroy");
-        if(priorSongs.length > 0)
-        {
-            songs.unshift(priorSongs.pop());
-            $("#playList li:eq(0)").after('<li>' + songs[1].name +
-                                ", " + songs[1].artist + '</li>');
-        }
-
-        if(songs.length > 0)
-            initSong(songs[0]);
-    }
 }
