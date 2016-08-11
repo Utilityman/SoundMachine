@@ -6,20 +6,16 @@
     <link href="css/style.css" rel="stylesheet" type="text/css"/>
     <link href="css/jukebox.css" rel="stylesheet" type="text/css"/>
 
-    <!-- blue player is pulled out because I have some of the elements modified-->
-    <link href="css/blue.monday/css/jplayer.blue.monday.css" rel="stylesheet" type="text/css" />
-
     <!-- Necassary line for imports -->
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
     <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="../node_modules/jplayer/dist/jplayer/jquery.jplayer.js"></script>
-    <script type="text/javascript" scr="../node_modules/jplayer/dist/jplayer/jquery.jplayer.swf"></script>
+    <script type='text/javascript' src='js/color-thief.min.js'></script>
+    <script type='text/javascript' src='js/siriwave.js'></script>
 
     <script type="text/javascript" src="js/tree.js"></script>
-    <script type='text/javascript' src='js/color-thief.min.js'></script>
-    <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/jukebox.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
 
     <!-- Last necassary line for imports -->
     <script>if (window.module) module = window.module;</script>
@@ -53,11 +49,11 @@
         </div>
 
         <div id="nowPlaying">
-            <p id="centerAnchor" class="titleText">Now Playing</p>
+            <p id="playerTitle" class="titleText">Now Playing</p>
             <p id="songArtistAlbum"></p>
             <div id="imageBuffer">
-                <img src="" class="coverArt inactive">
-                <img src="imgs/discIcon.png" id='activeCoverArt' class="coverArt active">
+                <div class="coverArt waves" id="waves"></div>
+                <img src="imgs/discIcon.png" id='activeCoverArt' class="coverArt hidden">
             </div>
 
             <div id='jukeboxControls'>
@@ -101,10 +97,14 @@
             <ul id="resourceTree">
                 <li onclick="showSettings(this)" id="librarySettings">Loading...</li>
                 <li class="setting hidden" onclick="addAll()">Add All to Queue</li>
-                <li class="setting hidden" onclick="showSortSettings(this)">Sort By</li>
+                <li class="setting hidden" id='sortBy' onclick="showSortSettings(this)">Sort By</li>
                 <li class="sort hidden" onclick="sortBy('album')">Album (A-Z)</li>
                 <li class="sort hidden" onclick="sortBy('artist')">Artist (A-Z)</li>
                 <li class="sort hidden" onclick="sortBy('songName')">Song Name (A-Z)</li>
+                <li class="setting hidden" id='externalOptions' onclick="showExternalOptions()">Add Song To Library</li>
+                <li class='external hidden'><input type="file" id="uploadFile" name="upload"><button onclick='addUpload()'>+</button></li>
+
+                <!-- <li class='external hidden'>Add External File(s) or Directory</li> -->
 
             </ul>
         </div>
@@ -116,7 +116,19 @@
             </ul>
         </div>
         <div id="settings" class="tabcontent">
-            <p>Oh hello!</p>
+            <fieldset>
+                <legend>Art Options</legend>
+            <input type='radio' name='artOptions' id='art' onclick="setArt('always')"> Always Show Album Art<br>
+            <input type='radio' name='artOptions' id='wave' onclick="setArt('waves')"> Always Show Waves<br>
+            <input type='radio' name='artOptions' id='asNeeded' onclick="setArt('default')"> Show Waves when Art Unavailable<br>
+            </fieldset>
+            <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Always On Top<br>
+            <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
+            <fieldset>
+                <input type='checkbox' name='broadcast' id='broadcast' onclick='toggleBroadcast()'>Broadcast<br>
+                <input type='text' name='broadcast' placeholder='BROADCAST IP' id='ip' readonly><br>
+                <input type='text' name='broadcast' placeholder='PORT NUM' id='port' readonly><br>
+            </fieldset>
         </div>
     </div>
 

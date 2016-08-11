@@ -1,3 +1,4 @@
+'use strict';
 
 const SKIP_DELAY = 3.0;
 
@@ -18,6 +19,17 @@ var Jukebox = function()
      // Candy Variables
      this.primaryColor = '';
      this.secondaryColor = '';
+     this.mode = 'default';
+     this.wave = new SiriWave({
+         container: waves,
+         width: 350,
+         height: 300,
+         cover: true,
+         speed: 0.0040,
+         amplitude: 0.1,
+         frequency: 1.75,
+     });
+     this.wave.start();
 
      // Variables that we handle since we load one track at a time
     this.autoplay = false;
@@ -25,16 +37,20 @@ var Jukebox = function()
     this.volume = 0.1;
     this.muted = false;
     this.isFinished = false;
+    this.tempo = 60;
+
+    // Networking
+    this.broadcasting = false;
 
     this.circle = new ProgressBar.Circle('#progress',
     {
         strokeWidth: 6,
         trailWidth: 3,
-        color: '#FFFF33',
+        color: '#3333CC',
         duration: 0,
         trailColor: '#eee',
-        from: {color: '#FFFF33', a:0},
-        to: {color: '#3CB03C', a:1},
+        from: {color: '#3333CC', a:0},
+        to: {color: '#CC33CC', a:1},
         step: function(state, circle)
         {
             circle.path.setAttribute('stroke', state.color);
@@ -58,6 +74,10 @@ var Jukebox = function()
 }
 var jukebox = null;
 
+// Jukebox Functions:
+// insert(song{album, artist, name, path}), play(), mute(isMuted), changeVolume(0-1.0),
+// seek(time), getState() - 'state', skip(), prev(), pause(), stop(), loop(), getPlaylist() - [],
+// setArt('default'|'waves'|'always')
 Jukebox.prototype =
 {
     insert: function(song)
@@ -149,11 +169,13 @@ Jukebox.prototype =
                 {
                     $('#playControl').removeClass('pause');
                     $('#playControl').addClass('play');
+                    self.circle.stop();
                 },
                 onstop: function()
                 {
                     $('#playControl').removeClass('pause');
                     $('#playControl').addClass('play');
+                    self.circle.stop();
                 },
             });
         }
@@ -168,6 +190,7 @@ Jukebox.prototype =
     {
         this.autoplay = true;
         this.player.play();
+        this.wave.setSpeed(.0120);
     },
     mute: function(bool)
     {
@@ -178,6 +201,7 @@ Jukebox.prototype =
     changeVolume: function(vol)
     {
         this.volume = vol;
+        this.wave.setAmplitude(this.volume);
         if(this.player != null)
             this.player.volume(vol);
     },
@@ -190,7 +214,7 @@ Jukebox.prototype =
            //return;
         this.player.seek(seekTo);
     },
-    state: function()
+    getState: function()
     {
         return this.player.state();
     },
@@ -238,6 +262,7 @@ Jukebox.prototype =
     },
     pause: function()
     {
+        this.wave.setSpeed(.0040);
         this.autoplay = false;
         this.player.pause();
     },
@@ -256,6 +281,20 @@ Jukebox.prototype =
     getPlaylist: function()
     {
         return this.playlist;
+    },
+    setArt: function(mode)
+    {
+        this.mode = mode;
+        if(this.mode == 'waves')
+        {
+            $('#activeCoverArt').addClass('hidden');
+            $('#waves').removeClass('hidden');
+        }
+        else if(this.mode == 'always')
+        {
+            $('#activeCoverArt').removeClass('hidden');
+            $('#waves').addClass('hidden');
+        }
     }
 }
 
@@ -293,8 +332,6 @@ function lowerVolume()
         else
             jukebox.changeVolume(newVol)
         jukebox.volumeBar.set(jukebox.volume);
-        //if(jukebox.player != null)
-        //    jukebox.player.volume(jukebox.volume());
     }
 }
 
@@ -308,7 +345,6 @@ function raiseVolume()
         else
             jukebox.changeVolume(newVol);
         jukebox.volumeBar.set(jukebox.volume);
-        console.log(jukebox.volume);
     }
 }
 
@@ -318,8 +354,8 @@ function raiseVolume()
  */
 function getCoverArt(tag)
 {
+    if(jukebox.mode == 'waves') {generateWaves(); return;}
     var image = tag.tags.picture;
-    //console.log(image);
     /* If the image exists, create the base64 image from the data and display it*/
     if(image)
     {
@@ -329,7 +365,12 @@ function getCoverArt(tag)
             base64String += String.fromCharCode(image.data[i]);
         }
         var base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
-        changeArt(base64);
+        if(jukebox.mode == 'default' || jukebox.mode == 'always')
+        {
+            $('#waves').addClass('hidden');
+            $('#activeCoverArt').removeClass('hidden');
+            changeArt(base64);
+        }
 
         /*var colorThief = new ColorThief();
         var palette = colorThief.getPalette(document.getElementById('activeCoverArt'), 2);
@@ -339,8 +380,9 @@ function getCoverArt(tag)
         console.log(jukebox.secondaryColor);
         console.log(jukebox.primaryColor);*/
     }
-    else /* This handles when the image data isn't available*/
+    else /* This handles the image when the data isn't available */
     {
+        if(jukebox.mode == 'default') {generateWaves(); return;}
         var genreName = "none";
         if(tag.tags.genre)
         {
@@ -353,16 +395,17 @@ function getCoverArt(tag)
                 genreName = genreData[tag.tags.gnre.data];
             }
         }
-        if(genreName == 'ROCK')
+        if(genreName == 'ROCK' && jukebox.mode == 'always')
             changeArt("imgs/cover_art/rockCoverArt.png");
-        else if(genreName != 'none')
+        else if(genreName != 'none' && jukebox.mode == 'always')
         {
             console.log("unhandled genre without art: " + genreName);
             changeArt("imgs/cover_art/unknownArt.jpg");
         }
         else
         {
-            changeArt("imgs/cover_art/unknownArt.jpg");
+            if(jukebox.mode == 'always')
+                changeArt("imgs/cover_art/unknownArt.jpg");
         }
     }
 }
@@ -373,8 +416,14 @@ function getCoverArt(tag)
  */
 function changeArt(src)
 {
-    var activeImage = $(".coverArt.active");
+    var activeImage = $("#activeCoverArt");
     activeImage.attr("src", src);
+}
+
+function generateWaves()
+{
+    $('#activeCoverArt').addClass('hidden');
+    $('#waves').removeClass('hidden');
 }
 
 function componentToHex(c)

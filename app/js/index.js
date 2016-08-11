@@ -9,13 +9,15 @@
 
 // instead of console.loging, I call log which calls console.log but first checks this variable
 const logging = true;
-const SETTING_ELE_COUNT = 6;
+const SETTING_ELE_COUNT = 8;
 
 var jsmediatags = require("jsmediatags");
 var fs = require('fs');
 var path = require('path');
 var genreData = require('./data/genre.json');
-//var songCatalogue = require("./data/manifest.json");
+var express = require('express'); var app = express();
+var {ipcRenderer} = require('electron');
+var publicIp = require('public-ip');
 
 function SongData(path, type, name, album, artist)
 {
@@ -37,7 +39,17 @@ var libraryMode = 'artist';
 // Music Player
 
 // Other Variables
+var setup = false;
 var asyncCalls = 0;
+
+$(document).ready(function()
+{
+    $('#roomName').change(function()
+    {
+        console.log($('#roomName').val());
+        $("#your-channel").text($("#roomName").val());
+    });
+});
 
 /**
  *  Function that runs on startup. This function will load
@@ -45,6 +57,7 @@ var asyncCalls = 0;
  */
 function startup()
 {
+    //toggleOntop();
     jukebox = new Jukebox();
     loadMusic(__dirname + "/res/");
 
@@ -98,35 +111,44 @@ function loadMusic(dir)
     {
         if (err) throw err;
         for(var i = 0; i < results.length; i++)
-        {
-            var type = results[i].substring(results[i].length-3, results[i].length);
-            if(type == 'mp3' || type == 'm4a')
-            {
-                asyncCalls++;
-                (function(path)
-                {
-                    jsmediatags.read(path,
-                    {
-                        onSuccess: function(tag)
-                        {
-                            collection.addAll(tag.tags.artist,
-                                              tag.tags.album,
-                                              tag.tags.title,
-                                              path);
-                            asyncCalls--;
-                            if(asyncCalls == 0)
-                                setupLibraryPane();
-                        },
-                        onError: function(error)
-                        {
-                            console.log(':(', error.type, error.info);
-                        },
-                    });
-
-                })(results[i]);
-            }
-        }
+            loadFile(results[i]);
     });
+}
+
+function loadFile(param)
+{
+    var type = param.substring(param.length-3, param.length);
+    if(type == 'mp3' || type == 'm4a')
+    {
+        asyncCalls++;
+        (function(path)
+        {
+            jsmediatags.read(path,
+            {
+                onSuccess: function(tag)
+                {
+                    collection.addAll(tag.tags.artist,
+                                      tag.tags.album,
+                                      tag.tags.title,
+                                      path);
+                    asyncCalls--;
+                    if(asyncCalls == 0 && !setup)
+                    {
+                        setupLibraryPane();
+                        setup = true;
+                    }
+                    else if(asyncCalls == 0 && setup)
+                    {
+                        appendToLibraryPane(tag.tags.artist, tag.tags.album, tag.tags.title);
+                    }
+                },
+                onError: function(error)
+                {
+                    console.log(':(', error.type, error.info);
+                },
+            });
+        })(param);
+    }
 }
 
 /**
@@ -230,10 +252,10 @@ function setupLibraryPane()
     for(var i = 0; i < artists.length; i++)
     {
         // Created li element for artists:
-        // <li id="<Artist_Name>" onclick="showArtists(this)">Artist Name</li>
+        // <li id="<Artist_Name>" class='artist' onclick="showArtists(this)">Artist Name</li>
         baseList.append('<li id="' + artists[i].split(splitRegex).join('_') +
                         '" class="artist' +
-                        '" onclick="showAlbums(this)">'+artists[i]+'</li>');
+                        '" onclick="showAlbums(this)">'+ artists[i] + '</li>');
         var albums = collection.get(artists[i], 1);
         for(var j = 0; j < albums.length; j++)
         {
@@ -243,7 +265,8 @@ function setupLibraryPane()
 
             baseList.append('<li class="album hidden ' +
                             artists[i].split(splitRegex).join('_') +
-                            '" id="' + albums[j].split(splitRegex).join('_') + "_" + artists[i].split(splitRegex).join('_') +
+                            '" id="' + albums[j].split(splitRegex).join('_') + "_" +
+                            artists[i].split(splitRegex).join('_') +
                             '" onclick="showSongs(this)">' +
                             albums[j] + '</li>');
             var songs = collection.getSongsSecure(artists[i], albums[j]);
@@ -255,7 +278,8 @@ function setupLibraryPane()
                 //                            onclick="addtoPlayList(this)">Song Name</li>
                 baseList.append('<li id="' + songs[k].split(splitRegex).join('_') +
                                 '" class="song hidden ' +
-                                albums[j].split(splitRegex).join('_') + "_" + artists[i].split(splitRegex).join('_') +
+                                albums[j].split(splitRegex).join('_') + "_" +
+                                artists[i].split(splitRegex).join('_') +
                                 '" onclick="addToPlaylist(this)">' +
                                 songs[k] + '</li>');
             }
@@ -263,6 +287,46 @@ function setupLibraryPane()
     }
 
     $("#librarySettings").text("Library Options");
+}
+
+function appendToLibraryPane(artist, album, title)
+{
+    var splitRegex = /[\s|/|(|)|&|'|\[|\]|!]/;
+    var baseList = $("#resourceTree");
+    var artistList = $('#resourceTree .artist');
+    var albumList = $('#resourceTree .album');
+    var titles = $('#resourceTree .song');
+
+    var found = false;
+    for(var i = 0; i < artistList.length; i++)
+        if(artistList[i].innerHTML == artist)
+            found = true;
+    if(!found)
+        baseList.append('<li id="' + artist.split(splitRegex).join('_') +
+                        '" class="artist' +
+                        '" onclick="showAlbums(this)">'+artist+'</li>');
+    found = false;
+    for(var i = 0; i < albumList.length; i++)
+        if(albumList[i].innerHTML == album)
+            found = true;
+    if(!found)
+        baseList.append('<li class="album hidden ' +
+                        artist.split(splitRegex).join('_') +
+                        '" id="' + album.split(splitRegex).join('_') + "_" + artist.split(splitRegex).join('_') +
+                        '" onclick="showSongs(this)">' +
+                        album + '</li>');
+
+    found = false;
+    for(var i = 0; i < titles.length; i++)
+        if(titles[i].innerHTML == title)
+            found = true;
+    if(!found)
+        baseList.append('<li id="' + title.split(splitRegex).join('_') +
+                        '" class="song hidden ' +
+                        album.split(splitRegex).join('_') + "_" + artist.split(splitRegex).join('_') +
+                        '" onclick="addToPlaylist(this)">' +
+                        title + '</li>');
+    sortBy('artist');
 }
 
 /**
@@ -292,6 +356,7 @@ function showAlbums(origin)
     }
     else if(libraryMode == 'artist')
     {
+        $('#resourceTree .external').addClass('hidden');
         $("#resourceTree .setting").addClass('hidden');
         $("#resourceTree .sort").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
@@ -301,7 +366,31 @@ function showAlbums(origin)
         $(document.getElementById(origin.getAttribute('id'))).addClass('active');
         $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
     }
+}
 
+function showSettings(origin)
+{
+    console.log($('#librarySettings'));
+    if($("#librarySettings").hasClass('active'))
+    {
+        $("#resourceTree .setting").addClass('hidden');
+        $("#resourceTree .sort").addClass('hidden');
+        $("#librarySettings").removeClass('active');
+        return;
+    }
+    else if(libraryMode == 'album')
+    {
+        console.log('hey');
+        $("#resourceTree .active").removeClass('active');
+        $("#resourceTree .album.active").removeClass('acitve');
+        $("#resourceTree .sort").addClass('hidden');
+        $('#resourceTree .album').addClass('hidden');
+        $("#resourceTree .song").addClass('hidden');
+    }
+
+    // Show settings
+    $("#librarySettings").addClass('active');
+    $("#resourceTree .setting").removeClass("hidden");
 }
 
 /**
@@ -323,7 +412,30 @@ function showSongs(origin)
 
 function showSortSettings(origin)
 {
+    $('#resourceTree .external').addClass('hidden');
+    $('#resourceTree #externalOptions').removeClass('active');
+    if($('#resourceTree #sortBy').hasClass('active'))
+    {
+        $('#resourceTree #sortBy').removeClass('active');
+        $('#resourceTree .sort').addClass('hidden');
+        return;
+    }
+    $('#resourceTree #sortBy').addClass('active');
     $("#resourceTree .sort").removeClass("hidden");
+}
+
+function showExternalOptions()
+{
+    $('#resourceTree #sortBy').removeClass('active');
+    $('#resourceTree .sort').addClass('hidden');
+    if($('#resourceTree #externalOptions').hasClass('active'))
+    {
+        $('#resourceTree #externalOptions').removeClass('active');
+        $('#resourceTree .external').addClass('hidden');
+        return;
+    }
+    $('#resourceTree #externalOptions').addClass('active');
+    $("#resourceTree .external").removeClass("hidden");
 }
 
 /**
@@ -335,40 +447,78 @@ function showSortSettings(origin)
  */
 function sortBy(sort)
 {
+    $('#librarySettings').removeClass('active');
+    $('#resourceTree #sortBy').removeClass('active');
+    $('.setting').addClass('hidden');
+    $('.sort').addClass('hidden');
     if(sort == 'album')
     {
-        console.log($("#resourceTree"));
         $("#resourceTree .artist").addClass('hidden');
+        $('#resourceTree .song').addClass('hidden');
+        $('#resourceTree .album').removeClass('active');
         var albums = $("#resourceTree .album");
         albums.removeClass('hidden');
         sortLi(albums);
         for(var i = albums.length - 1; i >= 0; i--)
-        {
             $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(albums[i]);
-        }
         for(var i = 0; i < albums.length; i++)
         {
             var songs = $(document.getElementsByClassName(albums[i].id));
-            for(var j = 0; j < 2; j++)
+            for(var j = 0; j < songs.length; j++)
                 $(albums[i]).after(songs[j]);
         }
-        console.log($("#resourceTree"));
+        return;
+    }
+    else if(sort == 'songName')
+    {
+        $("#resourceTree .artist").addClass('hidden');
+        $('#resourceTree .album').addClass('hidden');
+        var songs = $("#resourceTree .song");
+        songs.removeClass('hidden');
+        sortLi(songs);
+        for(var i = songs.length - 1; i >= 0; i--)
+            $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(songs[i]);
+        return;
+    }
+    else if(sort == 'artist')
+    {
+        $('#resourceTree .album').addClass('hidden');
+        $('#resourceTree .song').addClass('hidden');
+
+        //$("#resourceTree .artist").addClass('hidden');
+        var artists = $("#resourceTree .artist");
+        artists.removeClass('hidden');
+        sortLi(artists);
+        for(var i = artists.length - 1; i >= 0; i--)
+            $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(artists[i]);
+        for(var i = 0; i < artists.length; i++)
+        {
+            var albums = $(document.getElementsByClassName(artists[i].id));
+            for(var j = 0; j < albums.length; j++)
+            {
+                $(artists[i]).after(albums[j]);
+                var songs = $(document.getElementsByClassName(albums[j].id));
+                for(var k = 0; k < songs.length; k++)
+                    $(albums[j]).after(songs[k]);
+            }
+        }
+        return;
     }
 }
 
 // TODO: Switch to quicksort
 function sortLi(elements)
 {
+    var splitRegex = /The_/;
+
     for(var i = 0; i < elements.length; i++)
     {
         //var min = elements[i];
         var replaceIndex = i;
         for(var j = i; j < elements.length; j++)
         {
-            if(elements[replaceIndex].id > elements[j].id)
-            {
+            if(elements[replaceIndex].id.split(splitRegex).join('') > elements[j].id.split(splitRegex).join(''))
                 replaceIndex = j;
-            }
         }
 
         var temp = elements[i];
@@ -395,26 +545,6 @@ function addToPlaylist(origin)
             collectionData[3],
             collectionData[2],
             collectionData[1]));
-}
-
-function showSettings(origin)
-{
-    if($("#librarySettings").hasClass('active'))
-    {
-        $("#resourceTree .setting").addClass('hidden');
-        $("#resourceTree .sort").addClass('hidden');
-        $("#librarySettings").removeClass('active');
-        return;
-    }
-    $("#resourceTree .active").removeClass('active');
-    $("#resourceTree .album.active").removeClass('acitve');
-    $("#librarySettings").addClass('active');
-    $("#resourceTree .sort").addClass('hidden');
-    $('#resourceTree .album').addClass('hidden');
-    $("#resourceTree .song").addClass('hidden');
-
-    // Show settings
-    $("#resourceTree .setting").removeClass("hidden");
 }
 
 $(document).bind("mousedown", function(e)
@@ -526,6 +656,34 @@ function minimizeWindow()
 {
 
 }
+
+function toggleOntop()
+{
+    ipcRenderer.send('toggleTop', '');
+}
+
+function setArt(mode)
+{
+    jukebox.setArt(mode);
+}
+
+function toggleBroadcast()
+{
+    if($('#port').val() == '')
+        $('#port').val('8989');
+    $('#port').attr('readonly', !$('#port').attr('readonly'));
+
+    publicIp.v4().then(ip => {
+        $('#ip').val(ip);
+    });
+}
+
+function addUpload()
+{
+    var upload = $("#uploadFile");
+    loadFile(upload[0].files[0].path);
+}
+
 
 /**
  * shuffle method taken from: https://bost.ocks.org/mike/shuffle/

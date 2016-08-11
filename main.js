@@ -1,6 +1,7 @@
 'use strict';
 
 const electron = require('electron');
+const {ipcMain} = require('electron');
 
 const {app} = electron;
 const {BrowserWindow} = electron;
@@ -11,14 +12,13 @@ function createWindow()
 {
     mainWindow = new BrowserWindow(
     {
+        backgroundColor: '#404040',
         frame: false,
         titleBarStyle: 'hidden',
         height: 600,
         width: 808,
-        //resizable: true,
         minHeight: 28,
         minWidth: 500,
-        //alwaysOnTop: false,
     });
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
@@ -53,3 +53,8 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+ipcMain.on('toggleTop', (event, arg) => {
+    mainWindow.setAlwaysOnTop(
+        !mainWindow.isAlwaysOnTop());
+})

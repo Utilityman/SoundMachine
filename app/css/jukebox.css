@@ -1,9 +1,34 @@
 
+#nowPlaying
+{
+    width: 100%;
+    float: left;
+    width: 350px;
+    background-color: #535353;
+}
+
+#playerTitle
+{
+    margin-top: 24px;
+}
+
+#imageBuffer
+{
+    width: 300px;
+    height: 300px;
+}
+
+#imageBufer .inactive
+{
+    opacity: 0;
+}
+
 #jukeboxControls
 {
     width: 350px;
     border: 0;
 }
+
 #playControl
 {
     border-radius: 28px;

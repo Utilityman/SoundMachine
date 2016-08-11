@@ -118,38 +118,15 @@ html, body
     background-color: #444444;
 }
 
-#nowPlaying, #channelUsers, #chatRoom
+#channelUsers, #chatRoom
 {
     width: 100%;
-}
-
-#nowPlaying
-{
-    float: left;
-    width: 350px;
-    background-color: #535353;
-}
-
-#centerAnchor
-{
-    margin-top: 24px;
 }
 
 #channelUsers
 {
     float: left;
     width: 150px;
-}
-
-#imageBuffer
-{
-    width: 300px;
-    height: 300px;
-}
-
-#imageBufer .inactive
-{
-    opacity: 0;
 }
 
 #channelUsers table
@@ -299,6 +276,7 @@ html, body
     list-style-type: none;
     margin: auto;
     white-space: nowrap;
+    background-color: #151515;
 }
 
 #resourceTree li
@@ -313,6 +291,22 @@ html, body
     -webkit-transition: ease-in-out all .2s;
 }
 
+#resourceTree .album
+{
+    margin-left: 16px;
+}
+
+#resourceTree .sort,
+#resourceTree .external
+{
+    margin-left: 8px;
+}
+
+#resourceTree .song
+{
+    margin-left: 32px;
+}
+
 #resourceTree li:hover
 {
     background-color: #151515;
@@ -321,6 +315,7 @@ html, body
 #resourceTree li.active
 {
     background-color: #151515;
+    border: 0;
 }
 
 #resourceTree .album:not(.hidden), #resourceTree .setting:not(.hidden)
@@ -340,7 +335,9 @@ html, body
     background-color: #5D5D5D;
 }
 
-#resourceTree .song:not(.hidden), #resourceTree .sort:not(.hidden)
+#resourceTree .song:not(.hidden),
+#resourceTree .sort:not(.hidden),
+#resourceTree .external:not(.hidden)
 {
     color: black;
     background-color: #CCCCCC;
@@ -348,10 +345,32 @@ html, body
     display: block;
 }
 
-#resourceTree .song:hover, #resourceTree .sort:hover
+#resourceTree .song:hover,
+#resourceTree .sort:hover,
+#resourceTree .external:hover
 {
     background-color: white;
 }
+
+#settings
+{
+    color: white;
+    width: 90%;
+    margin-left: 5%;
+    white-space: nowrap;
+}
+
+#settings input, #settings fieldset
+{
+    margin-top: 12px;
+    font-size: 16px;
+}
+
+#settings input
+{
+    text-align: center;
+}
+
 
 @-webkit-keyframes fadeEffect
 {
