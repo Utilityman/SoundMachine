@@ -1,0 +1,29 @@
+html, body
+{
+    overflow: hidden;
+}
+
+#absolutely
+{
+    position: absolute;
+    width: 50%;
+    font-size: 38px;
+    font-weight: bolder;
+    color: black;
+    margin-left: 10%;
+    margin-top: 33%;
+    font-family: 'Raleway',sans-serif;
+    text-align: center;
+}
+
+#progress
+{
+    width: 100%;
+    height: 100%;
+}
+
+.progress > svg
+{
+    height: 100%;
+    display: block;
+}

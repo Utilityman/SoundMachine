@@ -7,9 +7,8 @@
     TODO: move the frame again
 */
 
-// instead of console.loging, I call log which calls console.log but first checks this variable
 const logging = true;
-const SETTING_ELE_COUNT = 8;
+var SETTING_ELE_COUNT = 0;
 
 var jsmediatags = require("jsmediatags");
 var fs = require('fs');
@@ -30,24 +29,44 @@ function SongData(path, type, name, album, artist)
 
 // File System Variables
 var collection = new Tree();
+var miniCollection = new Tree();
 
 // Window Variables
 var miniplayer = false;
 var miniplayerElementIndex = 0;
 var libraryMode = 'artist';
+var hideAlbums = false;
 
-// Music Player
+// Networking
+var broadcasting = false;
 
 // Other Variables
 var setup = false;
 var asyncCalls = 0;
+var asyncCallsToDo = 0;
 
 $(document).ready(function()
 {
+    SETTING_ELE_COUNT = $('#resourceTree').children().length;
+
     $('#roomName').change(function()
     {
         console.log($('#roomName').val());
         $("#your-channel").text($("#roomName").val());
+    });
+
+    // Switch channels
+    $(".channel").mousedown(function(event)
+    {
+        console.log("hey");
+        if(event.which == 3)
+        {
+            alert("Right Click - channel options");
+        }
+        if(event.which == 1)
+        {
+            alert("Left Click - Change Channel")
+        }
     });
 });
 
@@ -57,7 +76,6 @@ $(document).ready(function()
  */
 function startup()
 {
-    //toggleOntop();
     jukebox = new Jukebox();
     loadMusic(__dirname + "/res/");
 
@@ -132,15 +150,26 @@ function loadFile(param)
                                       tag.tags.title,
                                       path);
                     asyncCalls--;
+                    asyncCallsToDo--;
+
                     if(asyncCalls == 0 && !setup)
                     {
                         setupLibraryPane();
                         setup = true;
                     }
-                    else if(asyncCalls == 0 && setup)
+                    else if(setup)
                     {
-                        appendToLibraryPane(tag.tags.artist, tag.tags.album, tag.tags.title);
+                        miniCollection.addAll(tag.tags.artist,
+                                              tag.tags.album,
+                                              tag.tags.title,
+                                              path);
+                        if(asyncCallsToDo == 0)
+                        {
+                            appendToLibraryPane(miniCollection);
+                        }
                     }
+                    if(!setup)
+                        sendProgress(asyncCalls);
                 },
                 onError: function(error)
                 {
@@ -152,8 +181,7 @@ function loadFile(param)
 }
 
 /**
- *  This function will attempt to connect to a SoundMachine
- *  application that is broadcasting its music.
+ *  Connect and Load functions will be for when you connect to another channel
  */
 function connect()
 {
@@ -287,10 +315,14 @@ function setupLibraryPane()
     }
 
     $("#librarySettings").text("Library Options");
+    sortBy(libraryMode);
+    toggleWindow();
 }
 
-function appendToLibraryPane(artist, album, title)
+function appendToLibraryPane(miniCollection)
 {
+    createManifest();
+
     var splitRegex = /[\s|/|(|)|&|'|\[|\]|!]/;
     var baseList = $("#resourceTree");
     var artistList = $('#resourceTree .artist');
@@ -298,35 +330,53 @@ function appendToLibraryPane(artist, album, title)
     var titles = $('#resourceTree .song');
 
     var found = false;
-    for(var i = 0; i < artistList.length; i++)
-        if(artistList[i].innerHTML == artist)
-            found = true;
-    if(!found)
-        baseList.append('<li id="' + artist.split(splitRegex).join('_') +
-                        '" class="artist' +
-                        '" onclick="showAlbums(this)">'+artist+'</li>');
-    found = false;
-    for(var i = 0; i < albumList.length; i++)
-        if(albumList[i].innerHTML == album)
-            found = true;
-    if(!found)
-        baseList.append('<li class="album hidden ' +
-                        artist.split(splitRegex).join('_') +
-                        '" id="' + album.split(splitRegex).join('_') + "_" + artist.split(splitRegex).join('_') +
-                        '" onclick="showSongs(this)">' +
-                        album + '</li>');
+    var newArtists = miniCollection.getDepth(0);
 
-    found = false;
-    for(var i = 0; i < titles.length; i++)
-        if(titles[i].innerHTML == title)
-            found = true;
-    if(!found)
-        baseList.append('<li id="' + title.split(splitRegex).join('_') +
-                        '" class="song hidden ' +
-                        album.split(splitRegex).join('_') + "_" + artist.split(splitRegex).join('_') +
-                        '" onclick="addToPlaylist(this)">' +
-                        title + '</li>');
-    sortBy('artist');
+    // This is a mess but it works, if ever reading through - read carefully
+    // Essentially this goes through each level of the miniColl
+    for(var j = 0; j < newArtists.length; j++)
+    {
+        found = false;
+        for(var i = 0; i < artistList.length; i++)
+            if(artistList[i].innerHTML == newArtists[j])
+                found = true;
+        if(!found)
+            baseList.append('<li id="' + newArtists[j].split(splitRegex).join('_') +
+                            '" class="artist' +
+                            '" onclick="showAlbums(this)">'+newArtists[j]+'</li>');
+
+        var newAlbums = miniCollection.get(newArtists[j], 1);
+        for(var k = 0; k < newAlbums.length; k++)
+        {
+            found = false;
+            for(var i = 0; i < albumList.length; i++)
+                if(albumList[i].innerHTML == newAlbums[k])
+                    found = true;
+            if(!found)
+                baseList.append('<li class="album hidden ' +
+                                newArtists[j].split(splitRegex).join('_') +
+                                '" id="' + newAlbums[k].split(splitRegex).join('_') + "_" + newArtists[j].split(splitRegex).join('_') +
+                                '" onclick="showSongs(this)">' +
+                                newAlbums[k] + '</li>');
+            var newSongs = miniCollection.getSongsSecure(newArtists[j], newAlbums[k]);
+            for(var a = 0; a < newSongs.length; a++)
+            {
+                found = false;
+                for(var i = 0; i < titles.length; i++)
+                    if(titles[i].innerHTML == newSongs[a])
+                        found = true;
+                if(!found)
+                    baseList.append('<li id="' + newSongs[a].split(splitRegex).join('_') +
+                                    '" class="song hidden ' +
+                                    newAlbums[k].split(splitRegex).join('_') + "_" + newArtists[j].split(splitRegex).join('_') +
+                                    '" onclick="addToPlaylist(this)">' +
+                                    newSongs[a] + '</li>');
+            }
+        }
+    }
+
+    miniCollection = new Tree();
+    sortBy(libraryMode);
 }
 
 /**
@@ -361,16 +411,25 @@ function showAlbums(origin)
         $("#resourceTree .sort").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
         $("#resourceTree .song").addClass('hidden');
-
         $('#resourceTree .active').removeClass('active');
         $(document.getElementById(origin.getAttribute('id'))).addClass('active');
-        $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+
+
+        if(!hideAlbums)
+            $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+        else if(hideAlbums)
+        {
+            var albums = $(document.getElementsByClassName(origin.getAttribute('id')));
+            for(var i = 0; i < albums.length; i++)
+            {
+                showSongs(albums[i]);
+            }
+        }
     }
 }
 
 function showSettings(origin)
 {
-    console.log($('#librarySettings'));
     if($("#librarySettings").hasClass('active'))
     {
         $("#resourceTree .setting").addClass('hidden');
@@ -378,13 +437,19 @@ function showSettings(origin)
         $("#librarySettings").removeClass('active');
         return;
     }
-    else if(libraryMode == 'album')
+    else if(libraryMode == 'artist')
     {
-        console.log('hey');
         $("#resourceTree .active").removeClass('active');
         $("#resourceTree .album.active").removeClass('acitve');
         $("#resourceTree .sort").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
+        $("#resourceTree .song").addClass('hidden');
+    }
+    else if(libraryMode == 'album')
+    {
+        $("#resourceTree .active").removeClass('active');
+        $("#resourceTree .album.active").removeClass('acitve');
+        $("#resourceTree .sort").addClass('hidden');
         $("#resourceTree .song").addClass('hidden');
     }
 
@@ -404,7 +469,8 @@ function showSongs(origin)
         $(document.getElementById(origin.getAttribute('id'))).removeClass('active');
         return;
     }
-    $("#resourceTree .song").addClass('hidden');
+    if(!hideAlbums || libraryMode == 'album')
+        $("#resourceTree .song").addClass('hidden');
     $("#resourceTree .album.active").removeClass('active');
     $(document.getElementById(origin.getAttribute('id'))).addClass('active');
     $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
@@ -453,6 +519,8 @@ function sortBy(sort)
     $('.sort').addClass('hidden');
     if(sort == 'album')
     {
+        $('#hideAlbums').prop('disabled', true);
+        libraryMode = 'album';
         $("#resourceTree .artist").addClass('hidden');
         $('#resourceTree .song').addClass('hidden');
         $('#resourceTree .album').removeClass('active');
@@ -469,8 +537,10 @@ function sortBy(sort)
         }
         return;
     }
-    else if(sort == 'songName')
+    else if(sort == 'song')
     {
+        $('#hideAlbums').prop('disabled', false);
+        libraryMode = 'song';
         $("#resourceTree .artist").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
         var songs = $("#resourceTree .song");
@@ -482,10 +552,11 @@ function sortBy(sort)
     }
     else if(sort == 'artist')
     {
+        $('#hideAlbums').prop('disabled', false);
+        libraryMode = 'artist';
         $('#resourceTree .album').addClass('hidden');
         $('#resourceTree .song').addClass('hidden');
 
-        //$("#resourceTree .artist").addClass('hidden');
         var artists = $("#resourceTree .artist");
         artists.removeClass('hidden');
         sortLi(artists);
@@ -537,7 +608,6 @@ function addToPlaylist(origin)
     // Might be safe to use most of the time?
     var collectionData = collection.get(origin.textContent, 3);
     if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
-    console.log(collectionData);
 
     jukebox.insert(new SongData(collectionData[0],
         collectionData[0].substring(collectionData[0].length-3,
@@ -575,20 +645,6 @@ function openTab(ele, tabName)
     $("#"+tabName).css("display", "block");
     $(ele).addClass("active");
 }
-
-// Switch channels
-$(".channel").mousedown(function(event)
-{
-    console.log("hey");
-    if(event.which == 3)
-    {
-        alert("Right Click - channel options");
-    }
-    if(event.which == 1)
-    {
-        alert("Left Click - Change Channel")
-    }
-});
 
 function addChannel()
 {
@@ -662,6 +718,11 @@ function toggleOntop()
     ipcRenderer.send('toggleTop', '');
 }
 
+function toggleWebTools()
+{
+    ipcRenderer.send('toggleTools', '');
+}
+
 function setArt(mode)
 {
     jukebox.setArt(mode);
@@ -669,21 +730,52 @@ function setArt(mode)
 
 function toggleBroadcast()
 {
-    if($('#port').val() == '')
-        $('#port').val('8989');
-    $('#port').attr('readonly', !$('#port').attr('readonly'));
+    if(!broadcasting)
+    {
+        broadcast = true;
+        if($('#port').val() == '')
+            $('#port').val('8989');
+        $('#port').attr('readonly', !$('#port').attr('readonly'));
 
-    publicIp.v4().then(ip => {
-        $('#ip').val(ip);
-    });
+        publicIp.v4().then(ip => {
+            $('#ip').val(ip);
+        });
+    }
+    else
+    {
+        broadcasting = false;
+        $('#port').attr('readonly', !$('#port').attr('readonly'));
+    }
 }
 
 function addUpload()
 {
+    $('#externalOptions').removeClass('active');
+    $('.external').addClass('hidden');
     var upload = $("#uploadFile");
-    loadFile(upload[0].files[0].path);
+    asyncCallsToDo = upload[0].files.length;
+    for(var i = 0; i < upload[0].files.length; i++)
+    {
+        loadFile(upload[0].files[i].path);
+    }
+
+    $('#uploadFile').val('');
 }
 
+function toggleHideAlbums()
+{
+    hideAlbums = !hideAlbums;
+}
+
+function toggleWindow()
+{
+    ipcRenderer.send('toggleWindow', '');
+}
+
+function sendProgress(current)
+{
+    ipcRenderer.send('loading', current);
+}
 
 /**
  * shuffle method taken from: https://bost.ocks.org/mike/shuffle/

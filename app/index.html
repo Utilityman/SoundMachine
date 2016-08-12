@@ -98,14 +98,12 @@
                 <li onclick="showSettings(this)" id="librarySettings">Loading...</li>
                 <li class="setting hidden" onclick="addAll()">Add All to Queue</li>
                 <li class="setting hidden" id='sortBy' onclick="showSortSettings(this)">Sort By</li>
-                <li class="sort hidden" onclick="sortBy('album')">Album (A-Z)</li>
                 <li class="sort hidden" onclick="sortBy('artist')">Artist (A-Z)</li>
-                <li class="sort hidden" onclick="sortBy('songName')">Song Name (A-Z)</li>
-                <li class="setting hidden" id='externalOptions' onclick="showExternalOptions()">Add Song To Library</li>
-                <li class='external hidden'><input type="file" id="uploadFile" name="upload"><button onclick='addUpload()'>+</button></li>
-
-                <!-- <li class='external hidden'>Add External File(s) or Directory</li> -->
-
+                <li class="sort hidden" onclick="sortBy('song')">Song Name (A-Z)</li>
+                <li class="sort hidden" onclick="sortBy('album')">Album (A-Z)</li>
+                <li class="setting hidden" id='externalOptions' onclick="showExternalOptions()">Add Song(s) To Library</li>
+                <li class='external hidden'><input type="file" id="uploadFile" name="upload" multiple><button onclick='addUpload()'>+</button></li>
+                <li class="setting hidden"><input type='checkbox' id='hideAlbums' onclick='toggleHideAlbums()' name='hideAlbums'> Hide Albums</li>
             </ul>
         </div>
 
@@ -118,17 +116,21 @@
         <div id="settings" class="tabcontent">
             <fieldset>
                 <legend>Art Options</legend>
-            <input type='radio' name='artOptions' id='art' onclick="setArt('always')"> Always Show Album Art<br>
+            <input type='radio' name='artOptions' id='art' onclick="setArt('always')">Always Show Album Art<br>
             <input type='radio' name='artOptions' id='wave' onclick="setArt('waves')"> Always Show Waves<br>
-            <input type='radio' name='artOptions' id='asNeeded' onclick="setArt('default')"> Show Waves when Art Unavailable<br>
+            <input type='radio' name='artOptions' id='asNeeded' onclick="setArt('default')" checked="checked">
+                                                    Show Waves when Art Unavailable<br>
             </fieldset>
-            <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Always On Top<br>
-            <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
+            <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Window Always On Top<br>
+            Name: <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
             <fieldset>
+                <legend>Hosting</legend>
                 <input type='checkbox' name='broadcast' id='broadcast' onclick='toggleBroadcast()'>Broadcast<br>
                 <input type='text' name='broadcast' placeholder='BROADCAST IP' id='ip' readonly><br>
                 <input type='text' name='broadcast' placeholder='PORT NUM' id='port' readonly><br>
+                <input type='checkbox' name='broadcast'> Enable Remote Controlling<br>
             </fieldset>
+            <input type='checkbox' name='webTools' id='webTools' onclick='toggleWebTools()'> Toggle Web Tools<br>
         </div>
     </div>
 

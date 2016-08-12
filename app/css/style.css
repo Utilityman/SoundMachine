@@ -352,6 +352,20 @@ html, body
     background-color: white;
 }
 
+#resourceTree .external input
+{
+    color: black;
+    font-size: 16px;
+}
+
+#resourceTree .external button
+{
+    font-size: 16px;
+    margin-left: -128px;
+    border-radius: 2px;
+    background-color: #999999;
+}
+
 #settings
 {
     color: white;

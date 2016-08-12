@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sound Machine</title>
+    <link href="css/loading.css" rel="stylesheet" type="text/css"/>
+
+    <!-- Necassary line for imports -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+    <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script type='text/javascript' src='js/siriwave.js'></script>
+
+    <script type="text/javascript" src="js/loading.js"></script>
+
+    <!-- Last necassary line for imports -->
+    <script>if (window.module) module = window.module;</script>
+</head>
+<body onload='initLoading()'>
+    <div class="progress" id="progress">
+        <div id='absolutely'>Loading Resources...</div>
+    </div>
+</body>
+<html>

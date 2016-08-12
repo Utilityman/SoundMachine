@@ -25,11 +25,14 @@ var Jukebox = function()
          width: 350,
          height: 300,
          cover: true,
-         speed: 0.0040,
+         speed: .0040,
          amplitude: 0.1,
          frequency: 1.75,
+         color: '#FFF',
      });
+     console.log(this.wave);
      this.wave.start();
+     modColor(this.wave, 255, 255, 255, 0);
 
      // Variables that we handle since we load one track at a time
     this.autoplay = false;
@@ -46,11 +49,11 @@ var Jukebox = function()
     {
         strokeWidth: 6,
         trailWidth: 3,
-        color: '#3333CC',
+        color: '#8888CC',
         duration: 0,
         trailColor: '#eee',
-        from: {color: '#3333CC', a:0},
-        to: {color: '#CC33CC', a:1},
+        from: {color: '#8888CC', a:0},
+        to: {color: '#0000FF', a:1},
         step: function(state, circle)
         {
             circle.path.setAttribute('stroke', state.color);
@@ -115,6 +118,7 @@ Jukebox.prototype =
                     });
                     self.circle.set(self.player.seek() / self.player.duration());
                     self.circle.animate(1);
+                    self.wave.setSpeed(.0120);
                 },
                 onload: function()
                 {
@@ -135,6 +139,8 @@ Jukebox.prototype =
                             console.log(':(', error.type, error.info);
                         },
                     });
+                    if(self.autoplay)
+                        self.player.play();
                 },
                 onloaderror: function()
                 {
@@ -142,6 +148,7 @@ Jukebox.prototype =
                 },
                 onend: function()
                 {
+                    self.wave.setSpeed(.0040);
                     self.circle.stop();
                     // the jukebox will repeat itself if true
                     // so don't do anything else
@@ -154,11 +161,8 @@ Jukebox.prototype =
                         {
                             $("#playList li:nth-child(2)").remove();
                             var nextSong = self.playlist.shift();
-                            console.log(nextSong);
                             self.currentSong = nextSong;
                             self.insert(nextSong);
-                            if(self.autoplay)
-                                self.player.play();
                         }
                         // nullify it for the next song to reinit
                         else
@@ -170,12 +174,14 @@ Jukebox.prototype =
                     $('#playControl').removeClass('pause');
                     $('#playControl').addClass('play');
                     self.circle.stop();
+                    self.wave.setSpeed(.0040);
                 },
                 onstop: function()
                 {
                     $('#playControl').removeClass('pause');
                     $('#playControl').addClass('play');
                     self.circle.stop();
+                    self.wave.setSpeed(.0040);
                 },
             });
         }
@@ -190,7 +196,7 @@ Jukebox.prototype =
     {
         this.autoplay = true;
         this.player.play();
-        this.wave.setSpeed(.0120);
+        //this.wave.setSpeed(.0120);
     },
     mute: function(bool)
     {
@@ -231,8 +237,8 @@ Jukebox.prototype =
             var nextSong = this.playlist.shift();
             this.currentSong = nextSong;
             this.insert(nextSong);
-            if(this.autoplay)
-                this.player.play();
+            //if(this.autoplay)
+            //    this.player.play();
         }
     },
     prev: function()
@@ -251,13 +257,13 @@ Jukebox.prototype =
                     ", " + this.currentSong.artist + '</li>');
             this.player.stop();
             this.isFinished = true;
-            this.playlist.push(this.currentSong);
+            this.playlist.unshift(this.currentSong);
             var prevSong = this.priorSongs.pop();
 
             this.currentSong = prevSong;
             this.insert(prevSong);
-            if(this.autoplay)
-                this.player.play();
+            //if(this.autoplay)
+            //    this.player.play();
         }
     },
     pause: function()
@@ -422,6 +428,7 @@ function changeArt(src)
 
 function generateWaves()
 {
+    $('#activeCoverArt').attr("src", 'imgs/discIcon.png');
     $('#activeCoverArt').addClass('hidden');
     $('#waves').removeClass('hidden');
 }
@@ -435,4 +442,90 @@ function componentToHex(c)
 function rgbToHex(r, g, b)
 {
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function resetColor() {modColor(jukebox.wave, 255, 255, 255, 0);}
+function modColor(wave, red, green, blue, mode)
+{
+    var r;
+    var g;
+    var b;
+    switch(mode)
+    {
+        case 0: // start: 255,255,255 - end: 255,0,255
+            r = red;
+            g = green - 5;
+            b = blue;
+            if(g <= 0)
+            {
+                g = 0;
+                mode = 1;
+            }
+            break;
+        case 1: // start: 255,0,255 - end: 255,0,0
+            r = red;
+            g = green;
+            b = blue - 5;
+            if(b <= 0)
+            {
+                b = 0;
+                mode = 2;
+            }
+            break;
+        case 2: // start: 255,0,0 - end: 255,255,0
+            r = red;
+            g = green + 5;
+            b = blue;
+            if(g >= 255)
+            {
+                g = 255;
+                mode = 3;
+            }
+            break;
+        case 3: // start: 255,255,0 - end: 0,255,0
+            r = red - 5;
+            g = green;
+            b = blue;
+            if(r <= 0)
+            {
+                r = 0;
+                mode = 4;
+            }
+            break;
+        case 4: // start: 0, 255, 0 - end: 0, 255, 255
+            r = red;
+            g = green;
+            b = blue + 5;
+            if(b >= 255)
+            {
+                b = 255;
+                mode = 5;
+            }
+            break;
+        case 5: // start: 0, 255, 255 - end: 0, 0, 255
+            r = red;
+            g = green - 5;
+            b = blue;
+            if(g <= 0)
+            {
+                g = 0;
+                mode = 6;
+            }
+            break;
+        case 6: // start: 0, 0, 255 - end: 255, 255, 255
+            r = red + 5;
+            g = green + 5;
+            b = blue;
+            if(r >= 255 | g >= 255)
+            {
+                r = 255;
+                g = 255
+                mode = 0;
+            }
+            break;
+    }
+
+    var color = r + ',' + g + ',' + b;
+    wave.color = color;
+    setTimeout(modColor, 250, wave, r, g, b, mode);
 }

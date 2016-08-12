@@ -7,6 +7,8 @@ const {app} = electron;
 const {BrowserWindow} = electron;
 
 var mainWindow = null;
+var loadWindow = null;
+var selfDestructed = false;
 
 function createWindow()
 {
@@ -14,16 +16,34 @@ function createWindow()
     {
         backgroundColor: '#404040',
         frame: false,
-        titleBarStyle: 'hidden',
+//        titleBarStyle: 'hidden',
         height: 600,
         width: 808,
         minHeight: 28,
         minWidth: 500,
+        show: false,
+    });
+    loadWindow = new BrowserWindow(
+    {
+        backgroundColor: '#404040',
+        height: 316,
+        width: 300,
+        resizeable: false,
+        show: true,
     });
 
+    loadWindow.loadURL('file://' + __dirname + '/app/load.html');
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
+    loadWindow.on('closed', () =>
+    {
+        loadWindow = null;
+        if(!selfDestructed)
+        {
+            app.quit();
+        }
+    });
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {
@@ -58,3 +78,34 @@ ipcMain.on('toggleTop', (event, arg) => {
     mainWindow.setAlwaysOnTop(
         !mainWindow.isAlwaysOnTop());
 })
+
+ipcMain.on('toggleTools', (event, arg) =>
+{
+    mainWindow.toggleDevTools();
+});
+
+ipcMain.on('toggleWindow', (event, arg) =>
+{
+    var visibility = mainWindow.isVisible();
+
+    if(!visibility)
+        mainWindow.show();
+    else {
+        mainWindow.hide();
+    }
+});
+
+ipcMain.on('loading', (event, arg) =>
+{
+    if(loadWindow != null)
+        loadWindow.webContents.send('progress', {'prog': arg});
+});
+
+ipcMain.on('self-destruct', (event, arg) =>
+{
+    if(arg == 'loadingWindow')
+    {
+        selfDestructed = true;
+        loadWindow.destroy();
+    }
+});
