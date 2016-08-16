@@ -14,6 +14,9 @@ sound-machine-linux-x64/
 sound-machine-win32-ia32/
 sound-machine-mas-x64/
 sound-machine-win32-x64/
+SoundMachine-darwin-x64/
+SoundMachine-win32-ia32/
+SoundMachine-win32-x64/
 
 ## Resources 
 #(images will be uploaded once I actually create my own)

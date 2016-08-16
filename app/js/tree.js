@@ -39,6 +39,12 @@ Tree.prototype.log = function()
 
 Tree.prototype.addAll = function(artist, album, song, path)
 {
+    if(artist === undefined)
+        artist = "Unknown";
+    if(album === undefined)
+        album = "Unknown";
+    if(song === undefined)
+        song = path.substring(path.lastIndexOf('/')+1);
     var firstLevel;
     var secondLevel;
     var thirdLevel;

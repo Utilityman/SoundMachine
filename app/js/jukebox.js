@@ -30,7 +30,6 @@ var Jukebox = function()
          frequency: 1.75,
          color: '#FFF',
      });
-     console.log(this.wave);
      this.wave.start();
      modColor(this.wave, 255, 255, 255, 0);
 

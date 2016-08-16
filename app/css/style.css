@@ -297,7 +297,8 @@ html, body
 }
 
 #resourceTree .sort,
-#resourceTree .external
+#resourceTree .external,
+#resourceTree .addAll
 {
     margin-left: 8px;
 }
@@ -337,7 +338,8 @@ html, body
 
 #resourceTree .song:not(.hidden),
 #resourceTree .sort:not(.hidden),
-#resourceTree .external:not(.hidden)
+#resourceTree .external:not(.hidden),
+#resourceTree .addAll:not(.hidden)
 {
     color: black;
     background-color: #CCCCCC;
@@ -347,7 +349,8 @@ html, body
 
 #resourceTree .song:hover,
 #resourceTree .sort:hover,
-#resourceTree .external:hover
+#resourceTree .external:hover,
+#resourceTree .addAll:hover
 {
     background-color: white;
 }
@@ -358,12 +361,26 @@ html, body
     font-size: 16px;
 }
 
-#resourceTree .external button
+#resourceTree .external button, #resourceTree .external label
 {
     font-size: 16px;
-    margin-left: -128px;
     border-radius: 2px;
     background-color: #999999;
+}
+
+#resourceTree .external label
+{
+    padding: 4px 6px 4px 6px;
+    border-top: 1.5px solid #CCCCCC;
+    border-right: 1.5px solid #333333;
+    border-bottom: 1.5px solid #333333;
+    border-left: 1.5px solid #CCCCCC;
+}
+
+#resourceTree .external button:hover,
+#resourceTree .external label:hover
+{
+    background-color: #B4B4B4;
 }
 
 #settings
@@ -384,7 +401,6 @@ html, body
 {
     text-align: center;
 }
-
 
 @-webkit-keyframes fadeEffect
 {

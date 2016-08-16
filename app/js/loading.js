@@ -29,6 +29,4 @@ ipcRenderer.on('progress', function(event, data)
     if(data.prog > maxVal)
         maxVal = data.prog;
     circle.set(data.prog / maxVal);
-    if(data.prog <= 1)
-        ipcRenderer.send('self-destruct', 'loadingWindow');
 });

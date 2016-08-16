@@ -96,13 +96,23 @@
 
             <ul id="resourceTree">
                 <li onclick="showSettings(this)" id="librarySettings">Loading...</li>
-                <li class="setting hidden" onclick="addAll()">Add All to Queue</li>
+                <li class="setting hidden" onclick='showAddAllOptions()' id='addAll'>Add All to Queue</li>
+                <li class='addAll hidden' onclick='addAll("shuffle")'>Shuffle All</li>
+                <li class='addAll hidden' onclick='addAll("song")'>Add All By Title</li>
+                <li class='addAll hidden' onclick='addAll("artist")'>Add All By Artist</li>
+                <li class='addAll hidden' onclick='addAll("album")'>Add All By Album</li>
                 <li class="setting hidden" id='sortBy' onclick="showSortSettings(this)">Sort By</li>
                 <li class="sort hidden" onclick="sortBy('artist')">Artist (A-Z)</li>
                 <li class="sort hidden" onclick="sortBy('song')">Song Name (A-Z)</li>
                 <li class="sort hidden" onclick="sortBy('album')">Album (A-Z)</li>
                 <li class="setting hidden" id='externalOptions' onclick="showExternalOptions()">Add Song(s) To Library</li>
-                <li class='external hidden'><input type="file" id="uploadFile" name="upload" multiple><button onclick='addUpload()'>+</button></li>
+                <li class='external hidden'><label id='selectFiles' for='uploadFile'>Select File(s)</label>
+                    <input class='hidden' type="file" id="uploadFile" name="upload" multiple>
+                    <label class='hidden' id="addFiles" onclick='addUpload()'>Add File(s)</label></li>
+                <li class='external hidden'><input class='hidden' type='file' id='uploadDirectory'
+                    name='upload' webkitdirectory directory multiple>
+                    <label id="selectDirectory" for='uploadDirectory'>Select Directory</label>
+                    <label class='hidden' id="addDirectory" onclick='addDirectory()'>Add Directory</label></li>
                 <li class="setting hidden"><input type='checkbox' id='hideAlbums' onclick='toggleHideAlbums()' name='hideAlbums'> Hide Albums</li>
             </ul>
         </div>

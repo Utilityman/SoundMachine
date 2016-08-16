@@ -58,7 +58,6 @@ $(document).ready(function()
     // Switch channels
     $(".channel").mousedown(function(event)
     {
-        console.log("hey");
         if(event.which == 3)
         {
             alert("Right Click - channel options");
@@ -67,6 +66,17 @@ $(document).ready(function()
         {
             alert("Left Click - Change Channel")
         }
+    });
+
+    $('#uploadFile').change(function()
+    {
+        $('#selectFiles').addClass('hidden');
+        $('#addFiles').removeClass('hidden');
+    });
+    $('#uploadDirectory').change(function()
+    {
+        $('#selectDirectory').addClass('hidden');
+        $('#addDirectory').removeClass('hidden');
     });
 });
 
@@ -77,11 +87,48 @@ $(document).ready(function()
 function startup()
 {
     jukebox = new Jukebox();
-    loadMusic(__dirname + "/res/");
+    //loadMusic(__dirname + "/res/");
+    loadFromManifest();
 
     $("#library").css("display", "block");
     resizeWindow();
     loadLibrary();
+}
+
+function loadFromManifest()
+{
+    var manifest;
+    fs.stat(__dirname + "/data/manifest.json", function(err, stat)
+    {
+        if(err == null)
+        {
+            manifest = require(__dirname + "/data/manifest.json");
+        }
+        else if(err.code == 'ENOENT')
+        {
+            manifest = {};
+        }
+        else
+            console.log('strange error reading manifest.json');
+
+    if (manifest.branches)
+    {
+        for(var i = 0; i < manifest.branches.length; i++)
+                for(var j = 0; j < manifest.branches[i].branches.length; j++)
+                    for(var k = 0; k < manifest.branches[i].branches[j].branches.length; k++)
+                        loadFile(manifest.branches[i].branches[j].branches[k].branches[0].item);
+        if(manifest.branches.length == 0)
+        {
+            setupLibraryPane();
+            setup = true;
+        }
+    }
+    else if(!setup)
+    {
+        setupLibraryPane();
+        setup = true;
+    }
+    });
 }
 
 /**
@@ -89,8 +136,6 @@ function startup()
  *  the app/res directory. Once the paths to the music files are
  *  read, then jsmediatags is called to read in title,album,artist
  *  details. When jsmediatags finishes, then setupLibraryPane() is called.
- *
- *  Note: currently isn't handling undefined albums/artists/titles
  */
 function loadMusic(dir)
 {
@@ -151,7 +196,6 @@ function loadFile(param)
                                       path);
                     asyncCalls--;
                     asyncCallsToDo--;
-
                     if(asyncCalls == 0 && !setup)
                     {
                         setupLibraryPane();
@@ -406,9 +450,9 @@ function showAlbums(origin)
     }
     else if(libraryMode == 'artist')
     {
-        $('#resourceTree .external').addClass('hidden');
-        $("#resourceTree .setting").addClass('hidden');
-        $("#resourceTree .sort").addClass('hidden');
+        //$('#resourceTree .external').addClass('hidden');
+        //$("#resourceTree .setting").addClass('hidden');
+        //$("#resourceTree .sort").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
         $("#resourceTree .song").addClass('hidden');
         $('#resourceTree .active').removeClass('active');
@@ -434,6 +478,8 @@ function showSettings(origin)
     {
         $("#resourceTree .setting").addClass('hidden');
         $("#resourceTree .sort").addClass('hidden');
+        $('#resourceTree .external').addClass('hidden');
+        $('#resourceTree .addAll').addClass('hidden');
         $("#librarySettings").removeClass('active');
         return;
     }
@@ -478,6 +524,8 @@ function showSongs(origin)
 
 function showSortSettings(origin)
 {
+    $('#resourceTree .addAll').addClass('hidden');
+    $('#resourceTree #addAll').removeClass('active');
     $('#resourceTree .external').addClass('hidden');
     $('#resourceTree #externalOptions').removeClass('active');
     if($('#resourceTree #sortBy').hasClass('active'))
@@ -490,8 +538,26 @@ function showSortSettings(origin)
     $("#resourceTree .sort").removeClass("hidden");
 }
 
+function showAddAllOptions()
+{
+    $('#resourceTree .external').addClass('hidden');
+    $('#resourceTree .sort').addClass('hidden');
+    $('#resourceTree #exernalOptions').removeClass('active');
+    $('#resourceTree #sortBy').removeClass('active');
+    if($('#resourceTree #addAll').hasClass('active'))
+    {
+        $('#resourceTree #addAll').removeClass('active');
+        $('#resourceTree .addAll').addClass('hidden');
+        return;
+    }
+    $('#resourceTree #addAll').addClass('active');
+    $('#resourceTree .addAll').removeClass('hidden');
+}
+
 function showExternalOptions()
 {
+    $('#resourceTree .addAll').addClass('hidden');
+    $('#resourceTree #addAll').removeClass('active');
     $('#resourceTree #sortBy').removeClass('active');
     $('#resourceTree .sort').addClass('hidden');
     if($('#resourceTree #externalOptions').hasClass('active'))
@@ -517,6 +583,7 @@ function sortBy(sort)
     $('#resourceTree #sortBy').removeClass('active');
     $('.setting').addClass('hidden');
     $('.sort').addClass('hidden');
+    $('.addAll').addClass('hidden');
     if(sort == 'album')
     {
         $('#hideAlbums').prop('disabled', true);
@@ -617,6 +684,58 @@ function addToPlaylist(origin)
             collectionData[1]));
 }
 
+function addAll(mode)
+{
+    if(mode == 'album')
+    {
+        var albums = $("#resourceTree .album");
+        sortLi(albums);
+        for(var i = 0; i < albums.length; i++)
+        {
+            var songs = $(document.getElementsByClassName(albums[i].id));
+            for(var j = 0; j < songs.length; j++)
+                addToPlaylist(songs[j]);
+        }
+        return;
+    }
+    else if(mode == 'song')
+    {
+        var songs = $("#resourceTree .song");
+        sortLi(songs);
+        for(var j = 0; j < songs.length; j++)
+            addToPlaylist(songs[j]);
+        return;
+    }
+    else if(mode == 'artist')
+    {
+        var artists = $("#resourceTree .artist");
+        sortLi(artists);
+
+        for(var i = 0; i < artists.length; i++)
+        {
+            var albums = $(document.getElementsByClassName(artists[i].id));
+            for(var j = 0; j < albums.length; j++)
+            {
+                var songs = $(document.getElementsByClassName(albums[j].id));
+
+                for(var k = 0; k < songs.length; k++)
+                    addToPlaylist(songs[k]);
+
+            }
+        }
+        return;
+    }
+    else if(mode == 'shuffle')
+    {
+        var songs = $("#resourceTree .song");
+        shuffle(songs);
+        shuffle(songs);
+        for(var j = 0; j < songs.length; j++)
+            addToPlaylist(songs[j]);
+        return;
+    }
+}
+
 $(document).bind("mousedown", function(e)
 {
     console.log("doink");
@@ -628,7 +747,7 @@ $(document).bind("mousedown", function(e)
  */
 function createManifest()
 {
-    fs.writeFile("app/data/manifest.json", JSON.stringify(collection),
+    fs.writeFile(__dirname + "/data/manifest.json", JSON.stringify(collection),
         function(err)
         {
             if(err) console.log("error writing manifest.json");
@@ -705,7 +824,7 @@ function convertFromMiniplayer()
 
 function closeWindow()
 {
-
+    ipcRenderer.send('quit', '');
 }
 
 function minimizeWindow()
@@ -732,7 +851,7 @@ function toggleBroadcast()
 {
     if(!broadcasting)
     {
-        broadcast = true;
+        broadcasting = true;
         if($('#port').val() == '')
             $('#port').val('8989');
         $('#port').attr('readonly', !$('#port').attr('readonly'));
@@ -750,6 +869,8 @@ function toggleBroadcast()
 
 function addUpload()
 {
+    $('#selectFiles').removeClass('hidden');
+    $('#addFiles').addClass('hidden');
     $('#externalOptions').removeClass('active');
     $('.external').addClass('hidden');
     var upload = $("#uploadFile");
@@ -762,6 +883,67 @@ function addUpload()
     $('#uploadFile').val('');
 }
 
+function addDirectory()
+{
+    $('#addDirectory').addClass('hidden');
+    $('#selectDirectory').removeClass('hidden');
+    $('#externalOptions').removeClass('active');
+    $('.external').addClass('hidden');
+    var dir = $('#uploadDirectory')[0].files[0].path;
+    var walk = function(dir, done)
+    {
+      var results = [];
+      fs.readdir(dir, function(err, list)
+      {
+        if (err) return done(err);
+        var i = 0;
+        (function next()
+        {
+          var file = list[i++];
+          if (!file) return done(null, results);
+          file = path.resolve(dir, file);
+          fs.stat(file, function(err, stat)
+          {
+            if (stat && stat.isDirectory())
+            {
+              walk(file, function(err, res)
+              {
+                results = results.concat(res);
+                next();
+              });
+            }
+            else
+            {
+              results.push(file);
+              next();
+            }
+          });
+        })();
+      });
+    };
+    walk(dir, function(err, results)
+    {
+        console.log(dir);
+        if (err) throw err;
+
+        asyncCallsToDo = 0;
+        for(var i = 0; i < results.length; i++)
+            if(results[i].indexOf('.mp3') !== -1 || results[i].indexOf('.m4a') !== -1)
+            {
+                asyncCallsToDo++;
+            }
+
+
+        for(var i = 0; i < results.length; i++)
+        {
+            if(results[i].indexOf('.mp3') !== -1 || results[i].indexOf('m4a') !== -1)
+                loadFile(results[i]);
+        }
+
+        $('#uploadDirectory').val('');
+    });
+}
+
 function toggleHideAlbums()
 {
     hideAlbums = !hideAlbums;
@@ -769,7 +951,7 @@ function toggleHideAlbums()
 
 function toggleWindow()
 {
-    ipcRenderer.send('toggleWindow', '');
+    ipcRenderer.send('toggleWindow', 'finished-loading');
 }
 
 function sendProgress(current)

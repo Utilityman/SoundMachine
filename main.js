@@ -7,6 +7,7 @@ const {app} = electron;
 const {BrowserWindow} = electron;
 
 var mainWindow = null;
+var ready = false;
 var loadWindow = null;
 var selfDestructed = false;
 
@@ -35,7 +36,7 @@ function createWindow()
     loadWindow.loadURL('file://' + __dirname + '/app/load.html');
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
-    //mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();mainWindow.show();
     loadWindow.on('closed', () =>
     {
         loadWindow = null;
@@ -52,6 +53,8 @@ function createWindow()
     // when you should delete the corresponding element.
     mainWindow = null;
     });
+    var ready = true;
+
 }
 
 app.on('ready', createWindow);
@@ -68,7 +71,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null)
+    if (mainWindow === null && ready)
     {
         createWindow();
     }
@@ -87,11 +90,17 @@ ipcMain.on('toggleTools', (event, arg) =>
 ipcMain.on('toggleWindow', (event, arg) =>
 {
     var visibility = mainWindow.isVisible();
-
-    if(!visibility)
+    if(arg == '')
+        if(!visibility)
+            mainWindow.show();
+        else {
+            mainWindow.hide();
+        }
+    else if(arg == 'finished-loading')
+    {
         mainWindow.show();
-    else {
-        mainWindow.hide();
+        loadWindow.hide();
+        loadWindow = null;
     }
 });
 
@@ -108,4 +117,9 @@ ipcMain.on('self-destruct', (event, arg) =>
         selfDestructed = true;
         loadWindow.destroy();
     }
+});
+
+ipcMain.on('quit', (event, arg) =>
+{
+    app.quit();
 });
