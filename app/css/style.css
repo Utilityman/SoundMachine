@@ -6,7 +6,6 @@ html, body
     padding: 0;
     font-family: 'Raleway',sans-serif;
     -webkit-user-select: none;
-
 }
 
 #body
@@ -308,7 +307,7 @@ html, body
     margin-left: 32px;
 }
 
-#resourceTree li:hover
+#resourceTree li:hover, #resourceTree li.selected
 {
     background-color: #151515;
 }
@@ -382,6 +381,37 @@ html, body
 {
     background-color: #B4B4B4;
 }
+
+.contextContents
+{
+    position: absolute;
+    display: block;
+    z-index: 10;
+}
+
+.contextItems
+{
+    margin:0;
+    list-style-type: none;
+    margin: auto;
+    white-space: nowrap;
+}
+
+.contextItem
+{
+    font-size: 16px;
+    color: #333333;
+    background-color: #CCCCCC;
+    line-height: 32px;
+    width: 100%;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    text-align: center;
+}
+.contextItem:not(:last-child){border-bottom: 1.5px solid gray;}
+.contextItem:hover{background-color: white;}
 
 #settings
 {

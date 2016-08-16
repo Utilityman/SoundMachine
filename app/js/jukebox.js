@@ -191,6 +191,18 @@ Jukebox.prototype =
                                 ", " + song.artist + '</li>');
         }
     },
+    insertToFront: function(song)
+    {
+        var self = this;
+        if(self.player == null || self.isFinished)
+            self.insert(song);
+        else
+        {
+            self.playlist.unshift(song);
+            $("#playList li:eq(0)").after('<li>' + song.name +
+                                ", " + song.artist + '</li>');
+        }
+    },
     play: function()
     {
         this.autoplay = true;

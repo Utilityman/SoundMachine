@@ -27,10 +27,11 @@ function createWindow()
     loadWindow = new BrowserWindow(
     {
         backgroundColor: '#404040',
-        height: 316,
+        height: 300,
         width: 300,
-        resizeable: false,
+        resizable: false,
         show: true,
+        frame: false,
     });
 
     loadWindow.loadURL('file://' + __dirname + '/app/load.html');

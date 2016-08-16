@@ -34,8 +34,11 @@ var miniCollection = new Tree();
 // Window Variables
 var miniplayer = false;
 var miniplayerElementIndex = 0;
+
+// Settings
 var libraryMode = 'artist';
 var hideAlbums = false;
+var alwaysShuffle = true;
 
 // Networking
 var broadcasting = false;
@@ -44,6 +47,8 @@ var broadcasting = false;
 var setup = false;
 var asyncCalls = 0;
 var asyncCallsToDo = 0;
+var contextTarget = null;
+
 
 $(document).ready(function()
 {
@@ -67,6 +72,14 @@ $(document).ready(function()
             alert("Left Click - Change Channel")
         }
     });
+    $('.artist').mousedown(function(event)
+    {
+        console.log('ultra doink');
+        if(event.which == 3)
+        {
+            console.log(event);
+        }
+    });
 
     $('#uploadFile').change(function()
     {
@@ -78,6 +91,16 @@ $(document).ready(function()
         $('#selectDirectory').addClass('hidden');
         $('#addDirectory').removeClass('hidden');
     });
+});
+
+$(document).bind("mousedown", function(e)
+{
+    if(e.which == 1 && !($(e.target).hasClass('contextMenu')))
+    {
+        console.log('BLAM!');
+        $('.contextContents').addClass('hidden');
+        $('.selected').removeClass('selected');
+    }
 });
 
 /**
@@ -132,8 +155,7 @@ function loadFromManifest()
 }
 
 /**
- *  Loads the music from the filesystem. Music is located in
- *  the app/res directory. Once the paths to the music files are
+ *  Loads the music from a directory.Once the paths to the music files are
  *  read, then jsmediatags is called to read in title,album,artist
  *  details. When jsmediatags finishes, then setupLibraryPane() is called.
  */
@@ -328,6 +350,10 @@ function setupLibraryPane()
         baseList.append('<li id="' + artists[i].split(splitRegex).join('_') +
                         '" class="artist' +
                         '" onclick="showAlbums(this)">'+ artists[i] + '</li>');
+        $('#'+artists[i].split(splitRegex).join('_')).mousedown(function(event)
+        {
+            artistContextEvent(event);
+        });
         var albums = collection.get(artists[i], 1);
         for(var j = 0; j < albums.length; j++)
         {
@@ -341,13 +367,19 @@ function setupLibraryPane()
                             artists[i].split(splitRegex).join('_') +
                             '" onclick="showSongs(this)">' +
                             albums[j] + '</li>');
+            $(document.getElementById(albums[j].split(splitRegex).join('_') + "_" +
+                  artists[i].split(splitRegex).join('_'))).mousedown(function(event)
+            {
+                console.log("firing");
+                albumContextEvent(event);
+            });
             var songs = collection.getSongsSecure(artists[i], albums[j]);
 
             for(var k = 0; k < songs.length; k++)
             {
                 // Created li element for songs:
                 // <li id="<song_name>" class="song hidden <album_name>_<artist_name>"
-                //                            onclick="addtoPlayList(this)">Song Name</li>
+                //                            onclick="addToPlaylist(this)">Song Name</li>
                 baseList.append('<li id="' + songs[k].split(splitRegex).join('_') +
                                 '" class="song hidden ' +
                                 albums[j].split(splitRegex).join('_') + "_" +
@@ -385,9 +417,15 @@ function appendToLibraryPane(miniCollection)
             if(artistList[i].innerHTML == newArtists[j])
                 found = true;
         if(!found)
+        {
             baseList.append('<li id="' + newArtists[j].split(splitRegex).join('_') +
                             '" class="artist' +
                             '" onclick="showAlbums(this)">'+newArtists[j]+'</li>');
+            $('#'+newArtists[j].split(splitRegex).join('_')).mousedown(function(event)
+            {
+                artistContextEvent(event);
+            });
+        }
 
         var newAlbums = miniCollection.get(newArtists[j], 1);
         for(var k = 0; k < newAlbums.length; k++)
@@ -470,6 +508,8 @@ function showAlbums(origin)
             }
         }
     }
+    $('#artistMenu').addClass('hidden');
+
 }
 
 function showSettings(origin)
@@ -520,6 +560,7 @@ function showSongs(origin)
     $("#resourceTree .album.active").removeClass('active');
     $(document.getElementById(origin.getAttribute('id'))).addClass('active');
     $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+    $('#albumMenu').addClass('hidden');
 }
 
 function showSortSettings(origin)
@@ -668,6 +709,7 @@ function sortLi(elements)
 
 /**
  *  Song onlick event. This adds the clicked song to the playlist
+ *  Also can simply be called if you find the song DOM element
  */
 function addToPlaylist(origin)
 {
@@ -677,6 +719,22 @@ function addToPlaylist(origin)
     if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
 
     jukebox.insert(new SongData(collectionData[0],
+        collectionData[0].substring(collectionData[0].length-3,
+            collectionData[0].length),
+            collectionData[3],
+            collectionData[2],
+            collectionData[1]));
+}
+
+/**
+ *  gets called from context menus after this song discovery process
+ */
+function addToFront(origin)
+{
+    var collectionData = collection.get(origin.textContent, 3);
+    if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
+
+    jukebox.insertToFront(new SongData(collectionData[0],
         collectionData[0].substring(collectionData[0].length-3,
             collectionData[0].length),
             collectionData[3],
@@ -736,10 +794,6 @@ function addAll(mode)
     }
 }
 
-$(document).bind("mousedown", function(e)
-{
-    console.log("doink");
-});
 /**
  *  Iterates over songs[] immediately after the library
  *  is read in so that the complete library is included in
@@ -949,6 +1003,11 @@ function toggleHideAlbums()
     hideAlbums = !hideAlbums;
 }
 
+function toggleAlwaysShuffle()
+{
+    alwaysShuffle = !alwaysShuffle;
+}
+
 function toggleWindow()
 {
     ipcRenderer.send('toggleWindow', 'finished-loading');
@@ -976,4 +1035,79 @@ function shuffle(array)
     array[i] = t;
     }
     return array;
+}
+
+function artistContextEvent(e)
+{
+    if(e.which == 3)
+    {
+        $('.selected').removeClass('selected');
+        $('#artistMenu').removeClass('hidden');
+        $('#artistMenu').css('left', e.pageX  - $('#artistMenu').width() - 16);
+        $('#artistMenu').css('top', e.pageY);
+        $(e.target).addClass('selected');
+        contextTarget = e.target;
+    }
+}
+
+function addArtistToPlaylist()
+{
+    var artist = contextTarget.id;
+    console.log(artist);
+    var albums = $(document.getElementsByClassName(artist));
+    var songs = [];
+    for(var i = 0; i < albums.length; i++)
+    {
+        var albumSongs = $(document.getElementsByClassName(albums[i].getAttribute('id')));
+        for(var j = 0; j < albumSongs.length; j++)
+        {
+            songs.push(albumSongs[j]);
+        }
+        //songs.push($(document.getElementsByClassName(albums[i].getAttribute('id'))));
+    }
+    if(alwaysShuffle)
+        shuffle(songs);
+    for(var i = 0; i < songs.length; i++)
+    {
+        addToPlaylist(songs[i]);
+    }
+    $('#artistMenu').removeClass(artist);
+    $('#artistMenu').addClass('hidden');
+}
+
+function addArtistUpNext()
+{
+    var artist = contextTarget.id;
+    var albums = $(document.getElementsByClassName(artist));
+    var songs = [];
+    for(var i = 0; i < albums.length; i++)
+    {
+        var albumSongs = $(document.getElementsByClassName(albums[i].getAttribute('id')));
+        for(var j = 0; j < albumSongs.length; j++)
+        {
+            songs.push(albumSongs[j]);
+        }
+        //songs.push($(document.getElementsByClassName(albums[i].getAttribute('id'))));
+    }
+    if(alwaysShuffle)
+        shuffle(songs);
+    for(var i = 0; i < songs.length; i++)
+    {
+        addToFront(songs[i]);
+    }
+    $('#artistMenu').removeClass(artist);
+    $('#artistMenu').addClass('hidden');
+}
+
+function albumContextEvent(e)
+{
+    if(e.which == 3)
+    {
+        $('.selected').removeClass('selected');
+        $('#albumMenu').removeClass('hidden');
+        $('#albumMenu').css('left', e.pageX - $('#albumMenu').width() - 16);
+        $('#albumMenu').css('top', e.pageY);
+        $(e.target).addClass('selected');
+        contextTarget = e.target;
+    }
 }

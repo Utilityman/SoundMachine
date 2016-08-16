@@ -93,7 +93,6 @@
         </div>
         <div id="library" class="tabcontent">
             <div id="libraryScroll">
-
             <ul id="resourceTree">
                 <li onclick="showSettings(this)" id="librarySettings">Loading...</li>
                 <li class="setting hidden" onclick='showAddAllOptions()' id='addAll'>Add All to Queue</li>
@@ -131,6 +130,8 @@
             <input type='radio' name='artOptions' id='asNeeded' onclick="setArt('default')" checked="checked">
                                                     Show Waves when Art Unavailable<br>
             </fieldset>
+            <input type='checkbox' name='alwaysShuffle' id='alwaysShuffle'
+                                    onclick='toggleAlwaysShuffle()' checked="checked">Always Shuffle When Adding<br>
             <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Window Always On Top<br>
             Name: <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
             <fieldset>
@@ -144,5 +145,19 @@
         </div>
     </div>
 
+   <nav class="contextContents contextMenu hidden" id="artistMenu">
+        <ul class="contextItems contextMenu">
+            <li class="contextItem contextMenu" onclick="addArtistToPlaylist()">Add Artist to Playlist</li>
+            <li class="contextItem contextMenu" onclick="addArtistUpNext()">Add Artist to Up Next</li>
+            <li class="contextItem contextMenu">Remove Artist From Library</li>
+        </ul>
+    </nav>
+    <nav class="contextContents contextMenu hidden" id="albumMenu">
+        <ul class="contextItems contextMenu">
+            <li class="contextItem contextMenu" onclick="addAlbumtoPlaylist()">Add Album to Playlist</li>
+            <li class="contextItem contextMenu" onclick="addAlbumUpNext()">Add Album to Up Next</li>
+            <li class="contextItem contextMenu">Remove Album from Library</li>
+        </ul>
+    </nav>
 </body>
 </html>
