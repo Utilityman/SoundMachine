@@ -138,6 +138,7 @@
     width: 100%;
     border-bottom: 1.5px solid #484848;
     background: #525252;
+    height: 20px;
 }
 
 #playList li:first-child
@@ -147,15 +148,25 @@
     border-top: 1.5px solid #555555;
 }
 
-#playList li:first-child:hover
+#playList li > span.option
+{
+    display: inline-block;
+    width: 20px;
+    border-left: 1.5px solid #999999;
+    height: 20px;
+}
+
+/*#playList li:first-child:hover
 {
     background-color: #5D5D5D;
 }
 
-#playList li:hover
+/*#playList li:hover .songName
 {
-    background-color: #494949;
-}
+    transition: 1s;
+    bakcground-color: #494949;
+    width: 50%;
+}*/
 
 .coverArt
 {
@@ -170,7 +181,7 @@
     opacity: 1;
 }
 
-#songArtistAlbum
+#songArtistAlbum, #currentSong, #byArtist, #onAlbum
 {
     margin-bottom: 0;
     width: 95%;

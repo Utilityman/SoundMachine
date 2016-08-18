@@ -1,0 +1,9 @@
+{
+    "window": "bottom",
+    "name": "user",
+    "color": "green",
+    "channelName": "Your Channel",
+    "artOption": "default",
+    "shuffle": true,
+    "port": "8989",
+}

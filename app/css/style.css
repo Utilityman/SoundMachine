@@ -432,6 +432,13 @@ html, body
     text-align: center;
 }
 
+#settings div > label
+{
+    display: inline-block;
+    width: 80px;
+    text-align: left;
+}
+
 @-webkit-keyframes fadeEffect
 {
     from {opacity: 0;}
@@ -483,6 +490,11 @@ html, body
 {
     display: none;
     -webkit-animation: fadeEffect .5s;
+}
+
+.readonly
+{
+    color: #4A4A4A;
 }
 
 .hidden

@@ -5,7 +5,6 @@ const SKIP_DELAY = 3.0;
 var howler = require('howler');
 var ProgressBar = require('progressbar.js');
 
-
 var Jukebox = function()
 {
     // Howler Music Player
@@ -126,9 +125,12 @@ Jukebox.prototype =
                     {
                         onSuccess: function(tag)
                         {
-                            $("#songArtistAlbum").text(song.name + ", " +
-                                                       song.artist + " on " +
-                                                       song.album);
+                            //$("#songArtistAlbum").text(song.name + ", " +
+                            //                           song.artist + " on " +
+                            //                           song.album);
+                            $('#currentSong').text(song.name);
+                            $('#byArtist').text('By: ' + song.artist);
+                            $('#onAlbum').text('On: ' + song.album);
                             $(".channel.active").children().text(song.name + " by " +
                                                                     song.artist);
                             getCoverArt(tag);
@@ -187,8 +189,21 @@ Jukebox.prototype =
         else
         {
             self.playlist.push(song);
-            $("#playList").append('<li>' + song.name +
-                                ", " + song.artist + '</li>');
+            $("#playList").append('<li>' +
+               '<span class="songName">' + song.name + ", " + song.artist + '</span>' +
+               '<span class="option up">&uarr;</span><span class="option down">&darr;</span>' +
+               '<span class="option top">&#8624;</span><span class="option remove">X</span></li>');
+               $('#playList li:not(:first-child)').hover(
+                    function()
+                    {
+                        $(this).children('.songName').css('color', 'red');
+
+                    },
+                    function()
+                    {
+                        $(this).children('.songName').css('color', 'white');
+                    }
+                );
         }
     },
     insertToFront: function(song)
@@ -199,8 +214,18 @@ Jukebox.prototype =
         else
         {
             self.playlist.unshift(song);
-            $("#playList li:eq(0)").after('<li>' + song.name +
-                                ", " + song.artist + '</li>');
+            $("#playList li:eq(0)").after('<li>' +
+               '<span class="songName">' + song.name + ", " + song.artist + '</span></li>');
+            $('#playList li:not(:first-child)').hover(
+                function()
+                {
+                    $(this).css('color', 'red');
+                },
+                function()
+                {
+                    $(this).css('color', 'white');
+                }
+            );
         }
     },
     play: function()

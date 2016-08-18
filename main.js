@@ -23,6 +23,7 @@ function createWindow()
         minHeight: 28,
         minWidth: 500,
         show: false,
+        icon: __dirname + '/app/imgs/icon.png',
     });
     loadWindow = new BrowserWindow(
     {
@@ -32,6 +33,7 @@ function createWindow()
         resizable: false,
         show: true,
         frame: false,
+        icon: __dirname + '/app/imgs/icon.png',
     });
 
     loadWindow.loadURL('file://' + __dirname + '/app/load.html');
@@ -123,4 +125,9 @@ ipcMain.on('self-destruct', (event, arg) =>
 ipcMain.on('quit', (event, arg) =>
 {
     app.quit();
+});
+
+ipcMain.on('minimize', (event, arg) =>
+{
+    mainWindow.minimize();
 });

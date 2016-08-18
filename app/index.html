@@ -50,7 +50,10 @@
 
         <div id="nowPlaying">
             <p id="playerTitle" class="titleText">Now Playing</p>
-            <p id="songArtistAlbum"></p>
+            <!--<p id="songArtistAlbum"></p>-->
+            <p id="currentSong"></p>
+            <p id="byArtist"></p>
+            <p id="onAlbum"></p>
             <div id="imageBuffer">
                 <div class="coverArt waves" id="waves"></div>
                 <img src="imgs/discIcon.png" id='activeCoverArt' class="coverArt hidden">
@@ -123,6 +126,14 @@
             </ul>
         </div>
         <div id="settings" class="tabcontent">
+            <div>
+            <label>Username:</label>
+                <input type='text' name='userName' id='userName' maxlength='16'>
+            </div>
+            <div>
+            <label>Channel:</label>
+                <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
+            </div>
             <fieldset>
                 <legend>Art Options</legend>
             <input type='radio' name='artOptions' id='art' onclick="setArt('always')">Always Show Album Art<br>
@@ -133,13 +144,13 @@
             <input type='checkbox' name='alwaysShuffle' id='alwaysShuffle'
                                     onclick='toggleAlwaysShuffle()' checked="checked">Always Shuffle When Adding<br>
             <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Window Always On Top<br>
-            Name: <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
             <fieldset>
                 <legend>Hosting</legend>
                 <input type='checkbox' name='broadcast' id='broadcast' onclick='toggleBroadcast()'>Broadcast<br>
-                <input type='text' name='broadcast' placeholder='BROADCAST IP' id='ip' readonly><br>
-                <input type='text' name='broadcast' placeholder='PORT NUM' id='port' readonly><br>
+                <input type='text' class='readonly' name='broadcast' placeholder='BROADCAST IP' id='ip' readonly><br>
+                <input type='text' class='readonly' name='broadcast' placeholder='PORT NUM' id='port' readonly><br>
                 <input type='checkbox' name='broadcast'> Enable Remote Controlling<br>
+                <input type='text' name='channelLock' placeholder='Channel Password' id='channelLock' id='channelLock'><br>
             </fieldset>
             <input type='checkbox' name='webTools' id='webTools' onclick='toggleWebTools()'> Toggle Web Tools<br>
         </div>
@@ -149,14 +160,30 @@
         <ul class="contextItems contextMenu">
             <li class="contextItem contextMenu" onclick="addArtistToPlaylist()">Add Artist to Playlist</li>
             <li class="contextItem contextMenu" onclick="addArtistUpNext()">Add Artist to Up Next</li>
-            <li class="contextItem contextMenu">Remove Artist From Library</li>
+            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Artist From Library</li>
         </ul>
     </nav>
     <nav class="contextContents contextMenu hidden" id="albumMenu">
         <ul class="contextItems contextMenu">
-            <li class="contextItem contextMenu" onclick="addAlbumtoPlaylist()">Add Album to Playlist</li>
+            <li class="contextItem contextMenu" onclick="addAlbumToPlaylist()">Add Album to Playlist</li>
             <li class="contextItem contextMenu" onclick="addAlbumUpNext()">Add Album to Up Next</li>
-            <li class="contextItem contextMenu">Remove Album from Library</li>
+            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Album from Library</li>
+        </ul>
+    </nav>
+    <nav class='contextContents contextMenu hidden' id='songMenu'>
+        <ul class='contextItems contextMenu'>
+            <li class='contextItem contextMenu' onclick='addSongToPlaylist()'>Add Song to Playlist</li>
+            <li class='contextItem contextMenu' onclick='addSongUpNext()'>Add Song Up Next</li>
+            <li id='metadata' class='contextItem contextMenu' onclick='modifyMetaData()'>Modify Metadata</li>
+            <li class='contextItem contextMenu' onclick='removeTarget(this)'>Remove Song from Library</li>
+        </ul>
+    </nav>
+    <nav class='contextContents contextMenu hidden' id='playlistMenu'>
+        <ul class='contextItems contextMenu'>
+            <li class='contextItem contextMenu' onclick='moveToNext()'>Play Next</li>
+            <li class='contextItem contextMenu' onclick='moveUp()'>Move Up</li>
+            <li class='contextItem contextMenu' onclick='moveDown()'>Move Down</li>
+            <li class='contextItem contextMenu' onclick='removeFromList()'>Remove from Playlist</li>
         </ul>
     </nav>
 </body>
