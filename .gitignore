@@ -1,11 +1,13 @@
-.DS_Store
+
 
 ## specific folders
 node_modules/
-pink.flag/
+devRes/
+downloads/
 
-## generated files
+## program generated files
 manifest.json
+config.json
 
 ## packager
 sound-machine-darwin-x64/
@@ -18,12 +20,12 @@ SoundMachine-darwin-x64/
 SoundMachine-win32-ia32/
 SoundMachine-win32-x64/
 
-## Resources 
+## Resources
 #(images will be uploaded once I actually create my own)
-*.jpeg
-
-
+#(there shouldn't be any music in the project but just in case...)
 *.m4a
 *.mp3
 
+## Other Stuff
+.DS_Store
 *.swp

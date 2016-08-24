@@ -6,7 +6,11 @@ html, body
     padding: 0;
     font-family: 'Raleway',sans-serif;
     -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
 }
+
+li, input, .non-draggable{-webkit-app-region: no-drag;}
 
 #body
 {
@@ -55,7 +59,6 @@ html, body
 
 #channelMenu > ul > li {
   display: inline-block;
- // float: none;
   margin: 0 -3px 0 0;
 }
 
@@ -374,6 +377,13 @@ html, body
     border-right: 1.5px solid #333333;
     border-bottom: 1.5px solid #333333;
     border-left: 1.5px solid #CCCCCC;
+}
+
+#resourceTree .external input,
+#resourceTree .external button
+{
+    text-align: center;
+    width: 90%;
 }
 
 #resourceTree .external button:hover,

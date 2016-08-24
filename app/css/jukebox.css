@@ -134,39 +134,55 @@
 
 #playList li
 {
-    padding: 6px 4px;
+    padding: 0;
+    margin: 0;
     width: 100%;
+    overflow: hidden;
     border-bottom: 1.5px solid #484848;
     background: #525252;
-    height: 20px;
+    vertical-align: middle;
 }
 
 #playList li:first-child
 {
     background-color: #5D5D5D;
-    line-height: 12px;
+    padding: 4px 0px;
     border-top: 1.5px solid #555555;
 }
 
-#playList li > span.option
+#playList li > div
 {
+    padding: 4px 0px;
+    transition: .65s;
+    white-space: nowrap;
     display: inline-block;
-    width: 20px;
-    border-left: 1.5px solid #999999;
-    height: 20px;
+    overflow-x: hidden;
+    vertical-align: middle;
 }
 
-/*#playList li:first-child:hover
+#playList li > div.songArtist
 {
-    background-color: #5D5D5D;
+    width: 350px;
+    overflow-x: hidden;
+}
+#playList li > div.up,
+#playList li >div.down,
+#playList li > div.remove,
+#playList li > div.top
+{
+    border-left: 1.5px solid #444444;
+    width: 50px;
+    height: 100%;
 }
 
-/*#playList li:hover .songName
+#playList li > div.up:hover,
+#playList li >div.down:hover,
+#playList li > div.remove:hover,
+#playList li > div.top:hover
 {
-    transition: 1s;
-    bakcground-color: #494949;
-    width: 50%;
-}*/
+    color: white;
+    background-color: #333333;
+}
 
 .coverArt
 {

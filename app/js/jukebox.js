@@ -1,9 +1,20 @@
 'use strict';
 
+// TODO: Bug when skipping songs rapidly.
+
 const SKIP_DELAY = 3.0;
 
 var howler = require('howler');
 var ProgressBar = require('progressbar.js');
+
+function SongData(path, type, name, album, artist)
+{
+    this.path = path;
+    this.type = type;
+    this.name = name;
+    this.album = album;
+    this.artist = artist;
+}
 
 var Jukebox = function()
 {
@@ -25,7 +36,7 @@ var Jukebox = function()
          height: 300,
          cover: true,
          speed: .0040,
-         amplitude: 0.1,
+         amplitude: 0.5,
          frequency: 1.75,
          color: '#FFF',
      });
@@ -35,7 +46,7 @@ var Jukebox = function()
      // Variables that we handle since we load one track at a time
     this.autoplay = false;
     this.repeat = false;
-    this.volume = 0.1;
+    this.volume = 0.5;
     this.muted = false;
     this.isFinished = false;
     this.tempo = 60;
@@ -121,6 +132,21 @@ Jukebox.prototype =
                 onload: function()
                 {
                     self.isFinished = false;
+                    $('#playerTitle').css('display', 'none');
+                    $('#currentSong').text(song.name);
+                    $('#currentSong').css('margin-top', '8px');
+                    if(song.album == 'Youtube')
+                    {
+                        $('#byArtist').text('From: Youtube');
+                        $('#onAlbum').text('');
+                    }
+                    else {
+                        $('#byArtist').text('By: ' + song.artist);
+                        $('#onAlbum').text('On: ' + song.album);
+                    }
+
+                    $(".channel.active").children().text(song.name + " by " +
+                                                            song.artist);
                     jsmediatags.read(song.path,
                     {
                         onSuccess: function(tag)
@@ -128,16 +154,12 @@ Jukebox.prototype =
                             //$("#songArtistAlbum").text(song.name + ", " +
                             //                           song.artist + " on " +
                             //                           song.album);
-                            $('#currentSong').text(song.name);
-                            $('#byArtist').text('By: ' + song.artist);
-                            $('#onAlbum').text('On: ' + song.album);
-                            $(".channel.active").children().text(song.name + " by " +
-                                                                    song.artist);
                             getCoverArt(tag);
                         },
                         onError: function(error)
                         {
                             console.log(':(', error.type, error.info);
+                            getCoverArt();
                         },
                     });
                     if(self.autoplay)
@@ -189,21 +211,25 @@ Jukebox.prototype =
         else
         {
             self.playlist.push(song);
-            $("#playList").append('<li>' +
-               '<span class="songName">' + song.name + ", " + song.artist + '</span>' +
-               '<span class="option up">&uarr;</span><span class="option down">&darr;</span>' +
-               '<span class="option top">&#8624;</span><span class="option remove">X</span></li>');
-               $('#playList li:not(:first-child)').hover(
-                    function()
-                    {
-                        $(this).children('.songName').css('color', 'red');
+            $('#playList').append('<li>' +
+                '<div class="songArtist">' +
+                song.name + ', ' + song.artist + '</div>' +
+                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
+                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
+                '<div class="top" onclick="moveTop(this)">&#x21c8;</div>' +
+                '<div class="remove" onclick="remove(this)">X</div>' +
+            '</li>');
 
-                    },
-                    function()
-                    {
-                        $(this).children('.songName').css('color', 'white');
-                    }
-                );
+            $('#playList li:not(:first-child)').hover(
+                function()
+                {
+                    $(this).children('.songArtist').css('width', '150px');
+                },
+                function()
+                {
+                    $(this).children('.songArtist').css('width', '350px');
+                }
+            );
         }
     },
     insertToFront: function(song)
@@ -215,15 +241,22 @@ Jukebox.prototype =
         {
             self.playlist.unshift(song);
             $("#playList li:eq(0)").after('<li>' +
-               '<span class="songName">' + song.name + ", " + song.artist + '</span></li>');
+                '<div class="songArtist">' +
+                song.name + ', ' + song.artist + '</div>' +
+                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
+                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
+                '<div class="top" onclick="moveTop(this)">&#8624;</div>' +
+                '<div class="remove" onclick="remove(this)">X</div>' +
+            '</li>');
+
             $('#playList li:not(:first-child)').hover(
                 function()
                 {
-                    $(this).css('color', 'red');
+                    $(this).children('.songArtist').css('width', '150px');
                 },
                 function()
                 {
-                    $(this).css('color', 'white');
+                    $(this).children('.songArtist').css('width', '350px');
                 }
             );
         }
@@ -289,8 +322,25 @@ Jukebox.prototype =
         }
         if(this.priorSongs.length > 0)
         {
-            $("#playList li:eq(0)").after('<li>' + this.currentSong.name +
-                    ", " + this.currentSong.artist + '</li>');
+            $("#playList li:eq(0)").after('<li>' +
+                '<div class="songArtist">' +
+                this.currentSong.name + ', ' + this.currentSong.artist + '</div>' +
+                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
+                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
+                '<div class="top" onclick="moveTop(this)">&#8624;</div>' +
+                '<div class="remove" onclick="remove(this)">X</div>' +
+            '</li>');
+
+            $('#playList li:not(:first-child)').hover(
+                function()
+                {
+                    $(this).children('.songArtist').css('width', '150px');
+                },
+                function()
+                {
+                    $(this).children('.songArtist').css('width', '350px');
+                }
+            );
             this.player.stop();
             this.isFinished = true;
             this.playlist.unshift(this.currentSong);
@@ -390,13 +440,147 @@ function raiseVolume()
     }
 }
 
+function moveUp(source)
+{
+    var list = $(source).parent().parent('#playList').children();
+    source = $(source).parent();
+
+    var index = list.index(source);
+
+    // If it's not already the top...
+    if(index != 1)
+    {
+        var eleUp = list[index];
+        var eleDown = list[index-1];
+        var temp = jukebox.playlist[index - 1];
+        jukebox.playlist[index - 1] = jukebox.playlist[index - 2];
+        jukebox.playlist[index - 2] = temp;
+        $("#playList li:nth-child(" + (index) + ")").remove();
+        $("#playList li:nth-child(" + (index) + ")").remove();
+
+
+        $("#playList li:eq(" + (index - 2) + ")").after(eleDown);
+
+        $('#playList li:not(:first-child)').hover(
+            function()
+            {
+                $(this).children('.songArtist').css('width', '150px');
+            },
+            function()
+            {
+                $(this).children('.songArtist').css('width', '350px');
+            }
+        );
+        $("#playList li:eq(" + (index - 2) + ")").after(eleUp);
+
+        $('#playList li:not(:first-child)').hover(
+            function()
+            {
+                $(this).children('.songArtist').css('width', '150px');
+            },
+            function()
+            {
+                $(this).children('.songArtist').css('width', '350px');
+            }
+        );
+    }
+}
+
+function moveDown(source)
+{
+    var list = $(source).parent().parent('#playList').children();
+    source = $(source).parent();
+
+    var index = list.index(source);
+
+    // If it's not already the top...
+    if(index != (list.length - 1))
+    {
+        var eleUp = list[index];
+        var eleDown = list[index+1];
+        var temp = jukebox.playlist[index];
+        jukebox.playlist[index] = jukebox.playlist[index - 1];
+        jukebox.playlist[index - 1] = temp;
+        $("#playList li:nth-child(" + (index+1) + ")").remove();
+        $("#playList li:nth-child(" + (index+1) + ")").remove();
+
+        $("#playList li:eq(" + (index - 1) + ")").after(eleUp);
+
+        $('#playList li:not(:first-child)').hover(
+            function()
+            {
+                $(this).children('.songArtist').css('width', '150px');
+            },
+            function()
+            {
+                $(this).children('.songArtist').css('width', '350px');
+            }
+        );
+        $("#playList li:eq(" + (index - 1) + ")").after(eleDown);
+
+        $('#playList li:not(:first-child)').hover(
+            function()
+            {
+                $(this).children('.songArtist').css('width', '150px');
+            },
+            function()
+            {
+                $(this).children('.songArtist').css('width', '350px');
+            }
+        );
+    }
+}
+
+function moveTop(source)
+{
+    var list = $(source).parent().parent('#playList').children();
+    source = $(source).parent();
+
+    var index = list.index(source);
+
+    // If it's not already the top...
+    if(index != 1)
+    {
+        var eleUp = list[index];
+
+        var temp = jukebox.playlist[index - 1];
+        var removeIndex = jukebox.playlist.indexOf(temp);
+        jukebox.playlist.splice(removeIndex, 1);
+        jukebox.playlist.unshift(temp);
+        $("#playList li:nth-child(" + (index+1) + ")").remove();
+        $("#playList li:eq(0)").after(eleUp);
+        $('#playList li:not(:first-child)').hover(
+            function()
+            {
+                $(this).children('.songArtist').css('width', '150px');
+            },
+            function()
+            {
+                $(this).children('.songArtist').css('width', '350px');
+            }
+        );
+    }
+}
+
+function remove(source)
+{
+    var list = $(source).parent().parent('#playList').children();
+    source = $(source).parent();
+
+    var index = list.index(source);
+
+    var removeIndex = jukebox.playlist.indexOf(jukebox.playlist[index - 1]);
+    jukebox.playlist.splice(removeIndex, 1);
+    $("#playList li:nth-child(" + (index+1) + ")").remove();
+}
+
 /**
  *  Gets the cover art and puts it in #coverArt
  *  Also handles cases where the cover art doesn't exist
  */
 function getCoverArt(tag)
 {
-    if(jukebox.mode == 'waves') {generateWaves(); return;}
+    if(jukebox.mode == 'waves' || tag === undefined) {generateWaves(); return;}
     var image = tag.tags.picture;
     /* If the image exists, create the base64 image from the data and display it*/
     if(image)
