@@ -20,7 +20,7 @@ function createWindow()
         frame: false,
 //        titleBarStyle: 'hidden',
         height: 600,
-        width: 808,
+        width: 890,
         minHeight: 28,
         minWidth: 500,
         show: false,
@@ -40,7 +40,8 @@ function createWindow()
     loadWindow.loadURL('file://' + __dirname + '/app/load.html');
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
-    //mainWindow.webContents.openDevTools();mainWindow.show();
+    // if the main window isn't opening, uncomment this to immediately see mainWindow/devTools
+    //mainWindow.webContents.openDevTools();  mainWindow.show();
     loadWindow.on('closed', () =>
     {
         loadWindow = null;
@@ -55,7 +56,12 @@ function createWindow()
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
+
     mainWindow = null;
+    });
+
+    mainWindow.on('blur', () => {
+        mainWindow.webContents.send('unfocus', null);
     });
     var ready = true;
 

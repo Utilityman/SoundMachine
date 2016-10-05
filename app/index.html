@@ -27,7 +27,7 @@
 
 <div id="channelMenu">
     <ul id="channels">
-        <li class="leftBound gray" onclick="addChannel()">+</li>
+        <li class="leftBound gray" onclick="connect('localhost', '8989')">+</li>
         <li class="channel leftBound active" id="your-channel">Your Channel
             <span class="channelInfo"></span></li>
         <li class="channel leftBound" id="other-channel">Other Channel
@@ -73,6 +73,7 @@
                 </div>
             </div>
             <div id="playListPanel">
+                <p class="borderBottom"></p>
                 <div id="playListScroll">
                     <ul id="playList">
                         <li class="smallHeight">Up Next</li>
@@ -82,13 +83,15 @@
         <!--<div id="nowPlaying">-->
         </div>
 
-    </div></div>
+    </div>
+</div>
     <div id="col2">
         <ul id="otherPanels">
             <li class="tablinks" onclick="openTab(this, 'chatRoom')">Chat</li>
             <li class="tablinks active" onclick="openTab(this, 'library')">Library</li>
             <li class="tablinks" onclick="openTab(this, 'playlists')">Playlists</li>
             <li class="tablinks" onclick="openTab(this, 'settings')">Settings</li>
+            <li class="tablinks" onclick="openTab(this, 'hosting')">Hosting</li>
         </ul>
         <div id="chatRoom" class="tabcontent">
             <textarea rows="15" cols="50" id="chatbox" readonly>
@@ -100,7 +103,7 @@
             <div id="libraryScroll">
             <ul id="resourceTree">
                 <li onclick="showSettings(this)" id="librarySettings">Loading...</li>
-                <li class="setting hidden" onclick='showAddAllOptions()' id='addAll'>Add All to Queue</li>
+                <li class="setting hidden" onclick='showAddAllOptions()' id='addAll'>Add to Queue</li>
                 <li class='addAll hidden' onclick='addAll("shuffle")'>Shuffle All</li>
                 <li class='addAll hidden' onclick='addAll("song")'>Add All By Title</li>
                 <li class='addAll hidden' onclick='addAll("artist")'>Add All By Artist</li>
@@ -120,7 +123,6 @@
                 <li class='external hidden'>
                     <input type='text' id='youtubeUpload' name='youtubeUpload' placeholder='YouTube URL or Search'>
                 </li>
-                <li class="setting hidden"><input type='checkbox' id='hideAlbums' onclick='toggleHideAlbums()' name='hideAlbums'> Hide Albums</li>
             </ul>
         </div>
 
@@ -146,19 +148,30 @@
             <input type='radio' name='artOptions' id='asNeeded' onclick="setArt('default')" checked="checked">
                                                     Show Waves when Art Unavailable<br>
             </fieldset>
-            <input type='checkbox' name='alwaysShuffle' id='alwaysShuffle'
+            <fieldset>
+                <legend>Library Options</legend>
+                <input type='checkbox' name='alwaysShuffle' id='alwaysShuffle'
                                     onclick='toggleAlwaysShuffle()' checked="checked">Always Shuffle When Adding<br>
-            <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Window Always On Top<br>
+                <li class="setting hidden"><input type='checkbox' id='hideAlbums' onclick='toggleHideAlbums()' name='hideAlbums'> Hide Albums</li>
+            </fieldset>
+            <fieldset>
+                <legend>Window Options</legend>
+                <input type='checkbox' name='alwaysOntop' id='onTop' onclick='toggleOntop()'> Window Always On Top<br>
+                <input type='checkbox' name='hideListeners' id='hideListeners'>Hide Listeners<br>
+                <input type='checkbox' name='kioskMode' id='kioskMode'> Kiosk Mode<br>
+            </fieldset>
+            <input type='checkbox' name='webTools' id='webTools' onclick='toggleWebTools()'> Toggle Web Tools<br>
+        </div>
+        <div id='hosting' class='tabContent'>
             <fieldset>
                 <legend>Hosting</legend>
                 <input type='checkbox' name='broadcast' id='broadcast' onclick='toggleBroadcast()'>Broadcast<br>
                 <input type='text' class='readonly' name='broadcast' placeholder='BROADCAST IP' id='ip' readonly><br>
                 <input type='text' class='readonly' name='broadcast' placeholder='PORT NUM' id='port' readonly><br>
                 <input type='checkbox' name='broadcast'> Enable Remote Controlling<br>
-                <input type='text' name='channelLock' placeholder='Channel Password' id='channelLock' id='channelLock'>
-                <input type='checkbox' name='enableChannelPassword'> Require Password<br>
+                <input type='text' name='channelLock' placeholder='Channel Password' id='channelLock' id='channelLock'><br>
+                <input type='checkbox' name='enableChannelPassword'> Require Password<span id="passWarn"></span><br>
             </fieldset>
-            <input type='checkbox' name='webTools' id='webTools' onclick='toggleWebTools()'> Toggle Web Tools<br>
         </div>
     </div>
 
@@ -167,7 +180,7 @@
             <li class="contextItem contextMenu" onclick="addArtistToJukebox()">Add Artist to Queue</li>
             <li class="contextItem contextMenu" onclick="addArtistUpNext()">Add Artist to Up Next</li>
             <li class="contextItem contextMenu" onclick="addArtistToPlaylist()">Add Artist to Playlist</li>
-            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Artist From Library</li>
+            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Artist</li>
         </ul>
     </nav>
     <nav class="contextContents contextMenu hidden" id="albumMenu">
@@ -175,7 +188,7 @@
             <li class="contextItem contextMenu" onclick="addAlbumToJukebox()">Add Album to Queue</li>
             <li class="contextItem contextMenu" onclick="addAlbumUpNext()">Add Album to Up Next</li>
             <li class="contextItem contextMenu" onclick="addAlbumToPlaylist()">Add Album to Playlist</li>
-            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Album from Library</li>
+            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Album</li>
         </ul>
     </nav>
     <nav class='contextContents contextMenu hidden' id='songMenu'>
@@ -184,8 +197,24 @@
             <li class='contextItem contextMenu' onclick='addSongUpNext()'>Add Song Up Next</li>
             <li class="contextItem contextMenu" onclick="addSongToPlaylist()">Add Song to Playlist</li>
             <li id='metadata' class='contextItem contextMenu' onclick='modifyMetaData()'>Modify Metadata</li>
-            <li class='contextItem contextMenu' onclick='removeTarget(this)'>Remove Song from Library</li>
+            <li class='contextItem contextMenu' onclick='removeTarget(this)'>Remove Song</li>
         </ul>
+    </nav>
+    <nav id='connectWindow'>
+        <table>
+            <tr>
+                <td>Hostname:</td>
+                <td><input type='text'></td>
+            </tr>
+            <tr>
+                <td>Port:</td>
+                <td><input type='text'></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type='text'><td>
+            </tr>
+        </table>
     </nav>
 </body>
 </html>

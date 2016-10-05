@@ -423,30 +423,46 @@ li, input, .non-draggable{-webkit-app-region: no-drag;}
 .contextItem:not(:last-child){border-bottom: 1.5px solid gray;}
 .contextItem:hover{background-color: white;}
 
-#settings
+#settings, #hosting
 {
     color: white;
-    width: 90%;
+    height: 100%;
+    width: 96%;
     margin-left: 5%;
     white-space: nowrap;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
-#settings input, #settings fieldset
+#settings input, #settings fieldset,
+#hosting input, #hosting fieldset
 {
     margin-top: 12px;
     font-size: 16px;
 }
 
-#settings input
+#settings input,
+#hosting input
 {
     text-align: center;
 }
 
-#settings div > label
+#settings div > label,
+#hosting div > label
 {
     display: inline-block;
     width: 80px;
     text-align: left;
+}
+
+#webTools
+{
+    margin-bottom: 16px
+}
+
+#connectWindow
+{
+    display: none;
 }
 
 @-webkit-keyframes fadeEffect

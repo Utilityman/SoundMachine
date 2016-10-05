@@ -1,6 +1,10 @@
 'use strict';
 
-// TODO: Bug when skipping songs rapidly.
+/*
+            Known Bugs:
+// TODO: Bug when skipping songs rapidly. 
+
+*/
 
 const SKIP_DELAY = 3.0;
 
@@ -138,7 +142,7 @@ Jukebox.prototype =
                     if(song.album == 'Youtube')
                     {
                         $('#byArtist').text('From: Youtube');
-                        $('#onAlbum').text('');
+                        $('#onAlbum').text('---');
                     }
                     else {
                         $('#byArtist').text('By: ' + song.artist);
@@ -151,9 +155,6 @@ Jukebox.prototype =
                     {
                         onSuccess: function(tag)
                         {
-                            //$("#songArtistAlbum").text(song.name + ", " +
-                            //                           song.artist + " on " +
-                            //                           song.album);
                             getCoverArt(tag);
                         },
                         onError: function(error)
@@ -168,6 +169,10 @@ Jukebox.prototype =
                 onloaderror: function()
                 {
                     console.log('something has gone terribly wrong');
+                    if(self.playlist.length > 0)
+                        self.skip();
+                    else
+                        self.player = null;
                 },
                 onend: function()
                 {
@@ -214,10 +219,10 @@ Jukebox.prototype =
             $('#playList').append('<li>' +
                 '<div class="songArtist">' +
                 song.name + ', ' + song.artist + '</div>' +
-                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
-                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
-                '<div class="top" onclick="moveTop(this)">&#x21c8;</div>' +
-                '<div class="remove" onclick="remove(this)">X</div>' +
+                '<div class="up" onclick="moveUp(this)">&and;</div>' +
+                '<div class="down" onclick="moveDown(this)">&or;</div>' +
+                '<div class="top" onclick="moveTop(this)">&#8892;</div>' +
+                '<div class="remove" onclick="remove(this)">x</div>' +
             '</li>');
 
             $('#playList li:not(:first-child)').hover(
@@ -249,7 +254,7 @@ Jukebox.prototype =
                 '<div class="remove" onclick="remove(this)">X</div>' +
             '</li>');
 
-            $('#playList li:not(:first-child)').hover(
+            $('#playList li:nth-child(2)').hover(
                 function()
                 {
                     $(this).children('.songArtist').css('width', '150px');
@@ -309,6 +314,7 @@ Jukebox.prototype =
             //if(this.autoplay)
             //    this.player.play();
         }
+
     },
     prev: function()
     {
@@ -331,7 +337,7 @@ Jukebox.prototype =
                 '<div class="remove" onclick="remove(this)">X</div>' +
             '</li>');
 
-            $('#playList li:not(:first-child)').hover(
+            $('#playList li:last-child').hover(
                 function()
                 {
                     $(this).children('.songArtist').css('width', '150px');

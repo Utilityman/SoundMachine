@@ -7,6 +7,7 @@
  *  Playlists tab
  */
 
+
  var fs = require('fs');
  var path = require('path');
 
@@ -21,7 +22,6 @@
 
 $(document).ready(function()
 {
-    console.log('library.js');
 
     $('#uploadFile').change(function()
     {
@@ -96,23 +96,16 @@ function loadFile(param, album, artist, song)
     if(type == 'mp3' || type == 'm4a' || type == 'webm')
     {
         asyncCalls++;
-        (function(path)
+        (function(path, ext)
         {
             ffmetadata.read(path, function(err, data)
             {
                 if(err) console.error("Error reading metadata", err);
-                else
+                else if(ext == 'webm' && !setup)
                 {
-                    console.log(data);
-                }
-            });
-            jsmediatags.read(path,
-            {
-                onSuccess: function(tag)
-                {
-                    collection.addAll(tag.tags.artist,
-                                      tag.tags.album,
-                                      tag.tags.title,
+                    collection.addAll(artist,
+                                      album,
+                                      song,
                                       path);
                     asyncCalls--;
                     asyncCallsToDo--;
@@ -123,48 +116,52 @@ function loadFile(param, album, artist, song)
                     }
                     else if(setup)
                     {
-                        miniCollection.addAll(tag.tags.artist,
-                                              tag.tags.album,
-                                              tag.tags.title,
-                                              path);
                         if(asyncCallsToDo == 0)
                         {
                             appendToLibraryPane(miniCollection);
                         }
                     }
-                    if(!setup)
-                        sendProgress(asyncCalls);
-                },
-                onError: function(error)
+                    if(!setup){
+                        //sendProgress(asyncCalls);
+                    }
+                    }
+                else
                 {
-                    if(type == 'webm')
+                    if(data)
                     {
-                        collection.addAll(artist,
-                                          album,
-                                          song,
+                        var artistData = data.artist;
+                        var albumData = data.album;
+                        var titleData = data.title;
+                        collection.addAll(artistData,
+                                          albumData,
+                                          titleData,
                                           path);
-                    }
-                    else
-                        console.log(':(', error.type, error.info);
-                    asyncCalls--;
-                    asyncCallsToDo--;
-                    if(asyncCalls == 0 && !setup)
-                    {
-                        setupLibraryPane();
-                        setup = true;
-                    }
-                    else if(setup)
-                    {
-                        if(asyncCallsToDo == 0)
+                        asyncCalls--;
+                        asyncCallsToDo--;
+                        if(asyncCalls == 0 && !setup)
                         {
-                            appendToLibraryPane(miniCollection);
+                          setupLibraryPane();
+                          setup = true;
+                        }
+                        else if(setup)
+                        {
+                          miniCollection.addAll(tag.tags.artist,
+                                                tag.tags.album,
+                                                tag.tags.title,
+                                                path);
+                          if(asyncCallsToDo == 0)
+                          {
+                              appendToLibraryPane(miniCollection);
+                          }
+                        }
+                        if(!setup)
+                        {
+                            //sendProgress(asyncCalls);
                         }
                     }
-                    if(!setup)
-                        sendProgress(asyncCalls);
-                },
+                }
             });
-        })(param);
+        })(param, type);
     }
 }
 
@@ -182,7 +179,7 @@ function addYoutubeFileToCollection(youtube, title, path)
 }
 
 /**
- *  This function gets called once all of the async jsmediatags finish.
+ *  This function gets called once all of the ffmetadata calls finish.
  *  It utilizes the collection (which is a tree of all of the tracks)
  *  to create li's in the resourceTree for the user to interact with.
  *
@@ -315,11 +312,17 @@ function appendToLibraryPane(miniCollection)
                     if(titles[i].innerHTML == newSongs[a])
                         found = true;
                 if(!found)
+                {
                     baseList.append('<li id="' + newSongs[a].split(splitRegex).join('_') +
                                     '" class="song hidden ' +
                                     newAlbums[k].split(splitRegex).join('_') + "_" + newArtists[j].split(splitRegex).join('_') +
                                     '" onclick="addToPlaylist(this)">' +
                                     newSongs[a] + '</li>');
+                    $(document.getElementById(newSongs[k].split(splitRegex).join('_'))).mousedown(function(event)
+                    {
+                        songContextEvent(event);
+                    });
+                }
             }
         }
     }
@@ -841,7 +844,10 @@ function artistContextEvent(e)
         $('.selected').removeClass('selected');
         $('#artistMenu').removeClass('hidden');
         $('#artistMenu').css('left', e.pageX  - $('#artistMenu').width() - 16);
-        $('#artistMenu').css('top', e.pageY);
+        if(e.pageY + $('#artistMenu').height() > $(window).height())
+            $('#artistMenu').css('top', e.pageY - $('#artistMenu').height());
+        else
+            $('#artistMenu').css('top', e.pageY);
         $(e.target).addClass('selected');
         contextTarget = e.target;
     }
@@ -855,7 +861,10 @@ function albumContextEvent(e)
         $('.selected').removeClass('selected');
         $('#albumMenu').removeClass('hidden');
         $('#albumMenu').css('left', e.pageX - $('#albumMenu').width() - 16);
-        $('#albumMenu').css('top', e.pageY);
+        if(e.pageY + $('#albumMenu').height() > $(window).height())
+            $('#albumMenu').css('top', e.pageY - $('#albumMenu').height());
+        else
+            $('#albumMenu').css('top', e.pageY);
         $(e.target).addClass('selected');
         contextTarget = e.target;
     }
@@ -865,11 +874,15 @@ function songContextEvent(e)
 {
     if(e.which == 3)
     {
+        console.log($(window).height() + " " + e.pageY + " " + $('#songMenu').height());
         $('.contextContents').addClass('hidden');
         $('.selected').removeClass('selected');
         $('#songMenu').removeClass('hidden');
         $('#songMenu').css('left', e.pageX - $('#songMenu').width() - 16);
-        $('#songMenu').css('top', e.pageY);
+        if(e.pageY + $('#songMenu').height() > $(window).height())
+            $('#songMenu').css('top', e.pageY - $('#songMenu').height());
+        else
+            $('#songMenu').css('top', e.pageY);
         $(e.target).addClass('selected');
         contextTarget = e.target;
     }

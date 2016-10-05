@@ -6,8 +6,9 @@
 
 var SETTING_ELE_COUNT = 0;
 
-// Basic Node and Electron stuffs
+// Electron and Config Stuffs
 var {ipcRenderer} = require('electron');
+var config = require(__dirname + '/data/config.json');
 
 // Music Stuffs
 var jsmediatags = require("jsmediatags");
@@ -16,6 +17,7 @@ var genreData = require(__dirname + '/data/genre.json');
 // Collections
 var collection = new Tree();
 var miniCollection = new Tree();
+var connectedCollections = [];
 
 // Window Variables
 var miniplayer = false;
@@ -26,7 +28,6 @@ var setup = false;
 var asyncCalls = 0;
 var asyncCallsToDo = 0;
 var contextTarget = null;
-
 
 $(document).ready(function()
 {
@@ -50,8 +51,6 @@ $(document).ready(function()
             alert("Left Click - Change Channel")
         }
     });
-
-
 });
 
 $(document).bind("mousedown", function(e)
@@ -79,10 +78,10 @@ function startup()
 /**
  *  Connect and Load functions will be for when you connect to another channel
  */
-function connect()
+/*function connect()
 {
 
-}
+}*/
 
 function loadUsers()
 {
@@ -149,9 +148,10 @@ function resizeWindow()
     $("#chatbox").width($(window).width() - 550);
     $("#chatbox").height($(window).height() - 150);
     $("#library").height($(window).height() - 60);
+    $('#settings').height($(window).height() - 60);
     $("#input").width($(window).width() - 540);
-    $('#playListPanel').height($(window).height() - 490);
-    $("#playListScroll").height($(window).height() - 490);
+    $('#playListPanel').height($(window).height() - 502);
+    $("#playListScroll").height($(window).height() - 502);
     $("#libraryScroll").height($(window).height() - 60);
 
     if($(window).height() == 28)
@@ -244,3 +244,8 @@ function setArt(mode)
 {
     jukebox.setArt(mode);
 }
+
+ipcRenderer.on('unfocus', (event, args) =>
+{
+    $('.contextContents').addClass('hidden');
+});
