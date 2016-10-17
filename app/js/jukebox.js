@@ -2,7 +2,7 @@
 
 /*
             Known Bugs:
-// TODO: Bug when skipping songs rapidly. 
+// TODO: Bug when skipping songs rapidly.
 
 */
 
@@ -122,8 +122,8 @@ Jukebox.prototype =
                         color: '#33CC33',
                         duration: self.player.duration() * 1000 - self.player.seek(),
                         trailColor: '#eee',
-                        from: {color: '#33CC33', a:0},
-                        to: {color: '#3333CC', a:1},
+                        from: {color: '#4444FF', a:0},
+                        to: {color: '#202066', a:1},
                         step: function(state, circle)
                         {
                             circle.path.setAttribute('stroke', state.color);
@@ -248,10 +248,10 @@ Jukebox.prototype =
             $("#playList li:eq(0)").after('<li>' +
                 '<div class="songArtist">' +
                 song.name + ', ' + song.artist + '</div>' +
-                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
-                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
-                '<div class="top" onclick="moveTop(this)">&#8624;</div>' +
-                '<div class="remove" onclick="remove(this)">X</div>' +
+                '<div class="up" onclick="moveUp(this)">&and;</div>' +
+                '<div class="down" onclick="moveDown(this)">&or;</div>' +
+                '<div class="top" onclick="moveTop(this)">&#8892;</div>' +
+                '<div class="remove" onclick="remove(this)">x</div>' +
             '</li>');
 
             $('#playList li:nth-child(2)').hover(
