@@ -10,7 +10,6 @@ html, body
     cursor: default;
 }
 
-*{-webkit-app-region: drag;}
 li, input, .non-draggable{-webkit-app-region: no-drag;}
 
 #body
