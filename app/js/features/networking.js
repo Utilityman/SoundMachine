@@ -76,7 +76,6 @@ function connect(hostname, port)
     });
     room.on('connect_error', function() {
         console.log('Connection failed');
-        room.io.reconnection(false);
     });
     room.on('reconnect_failed', function() {
         console.log('Reconnection failed');
