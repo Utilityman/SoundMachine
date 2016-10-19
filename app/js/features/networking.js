@@ -45,8 +45,13 @@ function toggleBroadcast()
         socket_io.on('connection', function(socket)
         {
             console.log('User Connected!');
-            socket.emit('socketID', { id: socket.id });
-            socket.broadcast.emit('newUser', {id : socket.id});
+            socket.emit('verifySession', { id: socket.id });
+            //socket.broadcast.emit('newUser', {id : socket.id});
+
+            socket.on('verifyUser', function(data)
+            {
+                console.log(data);
+            });
         });
     }
     else
@@ -74,5 +79,14 @@ function connect(hostname, port)
     });
     room.on('reconnect_failed', function() {
         console.log('Reconnection failed');
+    });
+    room.on('newUser', function(data)
+    {
+        console.log("Reading New User!");
+    });
+    room.on('verifySession', function(data)
+    {
+        room.emit('verifyUser', {username: 'josh'});
+        console.log(data);
     });
 }
