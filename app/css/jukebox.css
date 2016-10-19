@@ -158,7 +158,7 @@
 #playList li > div
 {
     padding: 4px 0px;
-    transition: .65s;
+    transition: .45s;
     transition-timing-function: ease;
     white-space: nowrap;
     display: inline-block;
