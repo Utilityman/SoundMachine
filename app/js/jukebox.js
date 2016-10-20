@@ -2,11 +2,12 @@
 
 /*
             Known Bugs:
-// TODO: Bug when skipping songs rapidly. 
+// TODO: Bug when skipping songs rapidly.
 
 */
 
 const SKIP_DELAY = 3.0;
+const PLAYLIST_LENGTH = 22;
 
 var howler = require('howler');
 var ProgressBar = require('progressbar.js');
@@ -216,25 +217,7 @@ Jukebox.prototype =
         else
         {
             self.playlist.push(song);
-            $('#playList').append('<li>' +
-                '<div class="songArtist">' +
-                song.name + ', ' + song.artist + '</div>' +
-                '<div class="up" onclick="moveUp(this)">&and;</div>' +
-                '<div class="down" onclick="moveDown(this)">&or;</div>' +
-                '<div class="top" onclick="moveTop(this)">&#8892;</div>' +
-                '<div class="remove" onclick="remove(this)">x</div>' +
-            '</li>');
-
-            $('#playList li:not(:first-child)').hover(
-                function()
-                {
-                    $(this).children('.songArtist').css('width', '150px');
-                },
-                function()
-                {
-                    $(this).children('.songArtist').css('width', '350px');
-                }
-            );
+            insertToPlaylistGUI(song);
         }
     },
     insertToFront: function(song)
@@ -245,25 +228,7 @@ Jukebox.prototype =
         else
         {
             self.playlist.unshift(song);
-            $("#playList li:eq(0)").after('<li>' +
-                '<div class="songArtist">' +
-                song.name + ', ' + song.artist + '</div>' +
-                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
-                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
-                '<div class="top" onclick="moveTop(this)">&#8624;</div>' +
-                '<div class="remove" onclick="remove(this)">X</div>' +
-            '</li>');
-
-            $('#playList li:nth-child(2)').hover(
-                function()
-                {
-                    $(this).children('.songArtist').css('width', '150px');
-                },
-                function()
-                {
-                    $(this).children('.songArtist').css('width', '350px');
-                }
-            );
+            insertToPlaylistGUI(song, 1);
         }
     },
     play: function()
@@ -328,25 +293,7 @@ Jukebox.prototype =
         }
         if(this.priorSongs.length > 0)
         {
-            $("#playList li:eq(0)").after('<li>' +
-                '<div class="songArtist">' +
-                this.currentSong.name + ', ' + this.currentSong.artist + '</div>' +
-                '<div class="up" onclick="moveUp(this)">&uarr;</div>' +
-                '<div class="down" onclick="moveDown(this)">&darr;</div>' +
-                '<div class="top" onclick="moveTop(this)">&#8624;</div>' +
-                '<div class="remove" onclick="remove(this)">X</div>' +
-            '</li>');
-
-            $('#playList li:last-child').hover(
-                function()
-                {
-                    $(this).children('.songArtist').css('width', '150px');
-                },
-                function()
-                {
-                    $(this).children('.songArtist').css('width', '350px');
-                }
-            );
+            insertToPlaylistGUI(this.currentSong, 1);
             this.player.stop();
             this.isFinished = true;
             this.playlist.unshift(this.currentSong);
@@ -354,8 +301,6 @@ Jukebox.prototype =
 
             this.currentSong = prevSong;
             this.insert(prevSong);
-            //if(this.autoplay)
-            //    this.player.play();
         }
     },
     pause: function()
@@ -408,6 +353,45 @@ function playControl()
     {
         jukebox.pause();
     }
+}
+
+function insertToPlaylistGUI(song, mode)
+{
+    if(jukebox == null) return;
+
+    if(mode == 1)
+    {
+        $("#playList li:eq(0)").after('<li>' +
+            '<div class="songArtist">' +
+            song.name + ', ' + song.artist + '</div>' +
+            '<div class="up" onclick="moveUp(this)">&and;</div>' +
+            '<div class="down" onclick="moveDown(this)">&or;</div>' +
+            '<div class="top" onclick="moveTop(this)">&#8892;</div>' +
+            '<div class="remove" onclick="remove(this)">X</div>' +
+        '</li>');
+    }
+    else
+    {
+        $('#playList').append('<li>' +
+            '<div class="songArtist">' +
+            song.name + ', ' + song.artist + '</div>' +
+            '<div class="up" onclick="moveUp(this)">&and;</div>' +
+            '<div class="down" onclick="moveDown(this)">&or;</div>' +
+            '<div class="top" onclick="moveTop(this)">&#8892;</div>' +
+            '<div class="remove" onclick="remove(this)">x</div>' +
+        '</li>');
+    }
+
+    $('#playList li:not(:first-child)').hover(
+        function()
+        {
+            $(this).children('.songArtist').css('width', '150px');
+        },
+        function()
+        {
+            $(this).children('.songArtist').css('width', '350px');
+        }
+    );
 }
 
 function skipForward()

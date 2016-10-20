@@ -169,21 +169,21 @@ function resizeWindow()
 /* TODO: Work on the miniplayer*/
 function convertToMiniplayer()
 {
-    var channelInfo = $(".channel.active span");
-    channelInfo.css("height", "28px");
-    channelInfo.css("background", "gray");
-    channelInfo.css("max-width", "100%");
-    channelInfo.on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd',
-    function() {
-        channelInfo.parent().css("margin-right", channelInfo.width() + 16);
-    });
+    //var channelInfo = $(".channel.active span");
+    //channelInfo.css("height", "28px");
+    //channelInfo.css("background", "gray");
+    //channelInfo.css("max-width", "100%");
+    //channelInfo.on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd',
+    //function() {
+    //    channelInfo.parent().css("margin-right", channelInfo.width() + 16);
+    //});
 }
 
 function convertFromMiniplayer()
 {
-    $(".channel.active").children().css("padding", "0");
-    $(".channel.active").children().css("max-width", "0");
-    $(".channel.active").css("margin-right", 0);
+    //$(".channel.active").children().css("padding", "0");
+    //$(".channel.active").children().css("max-width", "0");
+    //$(".channel.active").css("margin-right", 0);
 }
 
 /**
