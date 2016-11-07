@@ -7,7 +7,8 @@ var server = null;
 var socket_io = null;
 var broadcasting = false;
 var room;
-var users = [];
+
+// TODO: Keep track of users and their ids
 
 var Room = function()
 {
@@ -15,9 +16,10 @@ var Room = function()
     this.collection = null;
 }
 
-var User = function(userID)
+var User = function(id, username)
 {
     this.id = userID;
+    this.name = username;
 }
 
 function toggleBroadcast()
@@ -25,6 +27,7 @@ function toggleBroadcast()
     if(!broadcasting)
     {
         broadcasting = true;
+
         if($('#port').val() == '')
             $('#port').val('8989');
         //$('#port').removeClass('readonly');
@@ -42,6 +45,9 @@ function toggleBroadcast()
             console.log('Server is now running...');
         });
 
+        room = new Room();
+        
+
         socket_io.on('connection', function(socket)
         {
             console.log('User Connected!');
@@ -50,20 +56,40 @@ function toggleBroadcast()
 
             socket.on('verifyUser', function(data)
             {
-                console.log(data);
+                room.users.push(new User(socket.id, data.username));
+                var newRow = $('<tr class="active hidden"><td>' +
+                               data.username + '</td></tr>');
+
+                $('#userTable tr:last').after(newRow);
+                newRow.fadeIn(750);
+                socket.emit('serverInformation', {
+                                    serverName: $("#roomName").val(),
+                                    library: collection,
+                                    playlist: jukebox.playlist
+                                });
+            });
+            socket.on('disconnect', function()
+            {
+                console.log('User Disconnected');
+                // TODO: Send socket.id to all other users
             });
         });
     }
     else
     {
         broadcasting = false;
+        // TODO: toogle off.
+        //      - disconnect users (preferably with message)
+        //      - close/end connection
+        //      - change css to normal view
         //$('#port').addClass('readonly');
         //$('#port').attr('readonly', !$('#port').attr('readonly'));
     }
 }
 
-function connect(hostname, port)
+function connect(hostname, port, username, password)
 {
+    if(!username) username = 'Nomy'
     room = require('socket.io-client')('http://' + hostname + ':' + port);
     console.log(room);
 
@@ -80,6 +106,7 @@ function connect(hostname, port)
     });
     room.on('reconnect_failed', function() {
         console.log('Reconnection failed');
+        room.io.reconnection(false);
     });
     room.on('newUser', function(data)
     {
@@ -87,7 +114,11 @@ function connect(hostname, port)
     });
     room.on('verifySession', function(data)
     {
-        room.emit('verifyUser', {username: 'josh'});
+        room.emit('verifyUser', {username: username});
+        console.log(data);
+    });
+    room.on('serverInformation', function(data)
+    {
         console.log(data);
     });
 }

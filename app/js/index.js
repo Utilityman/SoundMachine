@@ -22,12 +22,14 @@ var connectedCollections = [];
 // Window Variables
 var miniplayer = false;
 var miniplayerElementIndex = 0;
+var col1Width = 350;
 
 // Other Variables
 var setup = false;
 var asyncCalls = 0;
 var asyncCallsToDo = 0;
 var contextTarget = null;
+
 
 $(document).ready(function()
 {
@@ -144,7 +146,7 @@ function resizeWindow()
     $("#channelUsers").height($(window).height());
     $("#nowPlaying").height($(window).height());
     $("#col2").height($(window).height());
-    $("#col2").width($(window).width() - 500);
+    $("#col2").width($(window).width() - col1Width);
     $("#chatbox").width($(window).width() - 550);
     $("#chatbox").height($(window).height() - 150);
     $("#library").height($(window).height() - 60);
@@ -249,3 +251,32 @@ ipcRenderer.on('unfocus', (event, args) =>
 {
     $('.contextContents').addClass('hidden');
 });
+
+function showNotification(message, time)
+{
+    if(!$('#notification').hasClass('busy'))
+    {
+        $('#notification').addClass('busy');
+        if(!message) message = "Someone was compelled to send a message " +
+                                "but with no contents...";
+        if(!time) time = 1000;
+        $('#notification').text(message);
+        $('#notification').css('color', '#333333');
+
+        $('#notificationWindow').css('left',
+                            ($(window).width() / 2) -
+                            $('#notification').width());
+        $('#notificationWindow').css('top',
+                            $(window).height() / 2 -
+                            $('#notification').height());
+
+        $('#notification').fadeIn(1000, function()
+        {
+            setTimeout(function()
+            {
+                $('#notification').fadeOut(1000);
+                $('#notification').removeClass('busy');
+            }, time);
+        });
+    }
+}

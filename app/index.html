@@ -27,11 +27,12 @@
 
 <div id="channelMenu">
     <ul id="channels">
+        <!-- TODO: Instead of connecting to localhost, use popup to choose hostname/port-->
         <li class="leftBound gray" onclick="connect('localhost', '8989')">+</li>
         <li class="channel leftBound active" id="your-channel">Your Channel
             <span class="channelInfo"></span></li>
-        <li class="channel leftBound" id="other-channel">Other Channel
-            <span class="channelInfo"></span></li>
+        <!--<li class="channel leftBound" id="other-channel">Other Channel
+            <span class="channelInfo"></span></li>-->
 
         <!-- Set IDs and add colors -->
         <li class="rightBound red" onclick="closeWindow()">X</li>
@@ -44,9 +45,9 @@
     <div id="col1">
         <div id="channelUsers">
             <p class="titleText">Listeners</p>
-            <table id="users">
+            <table id="userTable">
                 <tr class="active"><td>You</td></tr>
-                <tr class="inactive"><td>Someone Else</td></tr>
+                <!--<tr class="inactive"><td>Someone Else</td></tr>-->
             </table>
         </div>
 
@@ -137,10 +138,7 @@
             <label>Username:</label>
                 <input type='text' name='userName' id='userName' maxlength='16' value='user'>
             </div>
-            <div>
-            <label>Channel:</label>
-                <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
-            </div>
+
             <fieldset>
                 <legend>Art Options</legend>
             <input type='radio' name='artOptions' id='art' onclick="setArt('always')">Always Show Album Art<br>
@@ -163,6 +161,10 @@
             <input type='checkbox' name='webTools' id='webTools' onclick='toggleWebTools()'> Toggle Web Tools<br>
         </div>
         <div id='hosting' class='tabcontent'>
+            <div>
+            <label>Channel:</label>
+                <input type='text' name='roomName' id='roomName' maxlength='20' value='Your Channel'>
+            </div>
             <fieldset>
                 <legend>Hosting</legend>
                 <input type='checkbox' name='broadcast' id='broadcast' onclick='toggleBroadcast()'>Broadcast<br>
@@ -174,6 +176,14 @@
             </fieldset>
         </div>
     </div>
+<!--
+ _____                _                _    ___  ___
+/  __ \              | |              | |   |  \/  |
+| /  \/  ___   _ __  | |_   ___ __  __| |_  | .  . |  ___  _ __   _   _  ___
+| |     / _ \ | '_ \ | __| / _ \\ \/ /| __| | |\/| | / _ \| '_ \ | | | |/ __|
+| \__/\| (_) || | | || |_ |  __/ >  < | |_  | |  | ||  __/| | | || |_| |\__ \
+\_____/ \___/ |_| |_| \__| \___|/_/\_\ \__| \_|  |_/ \___||_| |_| \__,_||___/
+-->
 
    <nav class="contextContents contextMenu hidden" id="artistMenu">
         <ul class="contextItems contextMenu">
@@ -217,7 +227,7 @@
         </table>
     </nav>
     <nav id='notificationWindow' class='hidden'>
-        <p id='notification'></p>
+        <p id='notification' class='hidden'></p>
     </nav>
 </body>
 </html>

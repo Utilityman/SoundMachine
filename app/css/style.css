@@ -107,7 +107,7 @@ li, input, .non-draggable{-webkit-app-region: no-drag;}
 #col1
 {
     display: inline-block;
-    width: 500px;
+    width: 350px;
     float: left;
     background-color: #333333;
 }
@@ -129,7 +129,7 @@ li, input, .non-draggable{-webkit-app-region: no-drag;}
 #channelUsers
 {
     float: left;
-    width: 150px;
+    width: 0px;
 }
 
 #channelUsers table
@@ -280,6 +280,7 @@ li, input, .non-draggable{-webkit-app-region: no-drag;}
     margin: auto;
     white-space: nowrap;
     background-color: #151515;
+    border-left: 1.5px solid #282828;
 }
 
 #resourceTree li
@@ -468,12 +469,25 @@ li, input, .non-draggable{-webkit-app-region: no-drag;}
 
 #notificationWindow
 {
-    padding: 32px 32px;
-    border: 1.5px solid #242424;
-    background-clor: #444444;
-    position: aboslute;
+    position: absolute;
     display: block;
+    z-index: 20;
+    color: red;
 }
+
+#notification
+{
+    background-color: #CCCCCC;
+    padding: 6px 16px;
+    font-size: 19px;
+    //border: 1px solid #DDDDDD;
+    border-top: 6.4px solid #444444;
+    border-radius: 4px;
+    max-width: 400px;
+    text-align: center;
+
+}
+
 #notificationWindow > p {color: #eeeeee;}
 
 @-webkit-keyframes fadeEffect

@@ -577,6 +577,9 @@ function addToPlaylist(origin)
 {
     // Relies on the song name being in the text of the origin...
     // Might be safe to use most of the time?
+    // TODO: BREAKS* WHEN ADDING SONGS WITH THE SAME NAME
+    // TODO: Since song lookup is based on name,
+    //              it will return the wrong song given two songs with the same name
     var collectionData = collection.get(origin.textContent, 3);
     if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
 
@@ -587,6 +590,7 @@ function addToPlaylist(origin)
             collectionData[2],
             collectionData[1]));
 }
+
 /////////////////////////////////////////////////////
 /*////////////// END SHOW FUNCTIONS ///////////////*/
 /////////////////////////////////////////////////////

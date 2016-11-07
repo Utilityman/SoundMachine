@@ -2,7 +2,12 @@
 
 /*
             Known Bugs:
-// TODO: Bug when skipping songs rapidly.
+  TODO: Songs no longer duplicate when skipping
+        quickly but instead, skips are sloowwww
+  TODO: Shuffle all with many songs slows the window,
+        limit the amount of displayed songs to something reasonable
+  TODO: Reproduce bug where user can't use prev. (Try skipping then using prev)
+  TODO: file-not-found stops everything! howto handle 'onloaderror'
 
 */
 
@@ -56,6 +61,10 @@ var Jukebox = function()
     this.isFinished = false;
     this.tempo = 60;
 
+    // variables about skipping.
+    this.skips = 0;
+    this.busy = false;
+
     // Networking
     this.broadcasting = false;
 
@@ -92,18 +101,41 @@ var Jukebox = function()
 var jukebox = null;
 
 // Jukebox Functions:
-// insert(song{album, artist, name, path}), play(), mute(isMuted), changeVolume(0-1.0),
-// seek(time), getState() - 'state', skip(), prev(), pause(), stop(), loop(), getPlaylist() - [],
-// setArt('default'|'waves'|'always')
+/* insert(song{album, artist, name, path}) - mostly correct
+       insertToFront(song) - inserts to front, mostly relies on the insert(Song) method
+       play() - works: only is called from onclick methods from the page
+       mute(bool) - works (to my knowledge), not implemented because there is no button!
+       changeVolume(0-1.0) - works, gets called from onbutton onclick methods
+       seek(time) - works, not implemented. Needs to be changed to seek to percentage (or just a different method)
+       getState() - returns the state. Not really used anywhere.
+       skip() - does its job in a way that doesn't create bugs, most of the time
+       prev() - does its job in a way that doesn't create bugs, most of the time
+       pause() - works: similar to play, is only ever called from onclick methods
+       stop() - useless? PRUNE probably
+       loop() - sets the player to loop the current song. NOT TESTED
+       getPlaylist() - returns the playlist of the jukebox, useful when sending information over network
+       setArt('default'|'waves'|'always') - sets the art mode for future songs and current song
+
+   Most of the heavy lifting comes from the insert function and the howler object that it creates.
+   That howler object has a few methods that help control flow:
+       onplay - called when the player is played. Only after loading and called by this.player.play(). Manages duration circle
+       onload - called when a song is loaded. This gets the art and sets window texts.
+       onloaderror - TODO handling when things break
+       onend - called when a song ends, automatically. Handles moving onto the next song
+       onpause - called when the song is stopped midway but not reset.
+       onstop - called when the song is reset to the beginning.
+*/
 Jukebox.prototype =
 {
     insert: function(song)
     {
         var self = this;
+        self.busy = true;
         // If this is the first song being inserted,
         // Initialize the player
         if(self.player == null || self.isFinished)
         {
+            //if(self.isFinished) self.player.stop();
             self.player = new howler.Howl
             ({
                 src: [song.path],
@@ -120,11 +152,11 @@ Jukebox.prototype =
                     {
                         strokeWidth: 5,
                         trailWidth: 3,
-                        color: '#33CC33',
+                        color: '#AAAACC',
                         duration: self.player.duration() * 1000 - self.player.seek(),
                         trailColor: '#eee',
-                        from: {color: '#33CC33', a:0},
-                        to: {color: '#3333CC', a:1},
+                        from: {color: '#AAAACC', a:0},
+                        to: {color: '#0000FF', a:1},
                         step: function(state, circle)
                         {
                             circle.path.setAttribute('stroke', state.color);
@@ -133,6 +165,7 @@ Jukebox.prototype =
                     self.circle.set(self.player.seek() / self.player.duration());
                     self.circle.animate(1);
                     self.wave.setSpeed(.0120);
+                    self.busy = false;
                 },
                 onload: function()
                 {
@@ -169,11 +202,8 @@ Jukebox.prototype =
                 },
                 onloaderror: function()
                 {
-                    console.log('something has gone terribly wrong');
-                    if(self.playlist.length > 0)
-                        self.skip();
-                    else
-                        self.player = null;
+                    console.log('something has gone horribly wrong');
+                    //self.player.unload();
                 },
                 onend: function()
                 {
@@ -195,7 +225,12 @@ Jukebox.prototype =
                         }
                         // nullify it for the next song to reinit
                         else
-                            self.player = null;
+                        {
+                            $('#playControl').removeClass('pause');
+                            $('#playControl').addClass('play');
+                            //self.player = null;
+                            self.circle.set(0);
+                        }
                     }
                 },
                 onpause: function()
@@ -266,18 +301,16 @@ Jukebox.prototype =
     skip: function()
     {
         if(this.player == null) return;
-        if(this.playlist.length > 0)
+        if(this.playlist.length > 0 && !this.busy)
         {
             $("#playList li:nth-child(2)").remove();
-
             this.player.stop();
             this.isFinished = true;
             this.priorSongs.push(this.currentSong);
             var nextSong = this.playlist.shift();
             this.currentSong = nextSong;
             this.insert(nextSong);
-            //if(this.autoplay)
-            //    this.player.play();
+            this.skips -= 1;
         }
 
     },
@@ -291,7 +324,13 @@ Jukebox.prototype =
                 this.player.play();
             return;
         }
-        if(this.priorSongs.length > 0)
+        else if(this.playlist.length == 0)
+        {
+            this.player.stop();
+            this.isFinished = true;
+            this.insert(this.currentSong);
+        }
+        else if(this.priorSongs.length > 0)
         {
             insertToPlaylistGUI(this.currentSong, 1);
             this.player.stop();
@@ -358,7 +397,6 @@ function playControl()
 function insertToPlaylistGUI(song, mode)
 {
     if(jukebox == null) return;
-
     if(mode == 1)
     {
         $("#playList li:eq(0)").after('<li>' +
@@ -396,7 +434,15 @@ function insertToPlaylistGUI(song, mode)
 
 function skipForward()
 {
+    jukebox.skips += 1;
+    doSkips();
+}
+
+function doSkips()
+{
     jukebox.skip();
+    if(jukebox.skips > 0)
+        setTimeout(doSkips, 250);
 }
 
 function skipBack()

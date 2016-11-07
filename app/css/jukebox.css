@@ -38,7 +38,6 @@
     position: absolute;
     width: 68px;
     height: 68px;
-    //border: .5px solid #0000FF;
 }
 
 #skipBack
@@ -47,7 +46,6 @@
     position: absolute;
     width: 52px;
     height: 48px;
-    //border: .5px solid #0000FF;
     margin-top: 16px;
     margin-left: 68px
 }
@@ -58,7 +56,6 @@
     position: absolute;
     width: 52px;
     height: 48px;
-    //border: .5px solid #0000FF;
     margin-top: 16px;
     margin-left: 226px;
 }
