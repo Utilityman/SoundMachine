@@ -77,10 +77,15 @@ function loadFromManifest()
     });
 }
 
+/**
+ * @param param the file path
+ * @param artist,album,song self explanatory
+ */
 function loadFile(param, artist, album, song)
 {
     var lastIndex = param.lastIndexOf('.');
     if(lastIndex == -1) return "invalid file";
+    if(!validFile(param)) return "file not found!";
     var type = param.substring(lastIndex+1, param.length);
 
     // Make sure the path is an accepted type
@@ -127,6 +132,24 @@ function loadFile(param, artist, album, song)
                 });
             }
         })(param, type, album, artist, song);
+    }
+}
+
+/**
+ * checks whether or not a file exists given a path to it
+ * @param path path-to-file to check validitity
+ */
+function validFile(path)
+{
+    try
+    {
+        fs.statSync(path);
+        //console.log("file Exists");
+        return true;
+    } catch (e)
+    {
+        //console.log("file does not exist!");
+        return false;
     }
 }
 

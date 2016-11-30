@@ -133,6 +133,7 @@
 #playList li
 {
     padding: 0;
+    padding-left: 4px;
     margin: 0;
     width: 100%;
     overflow: hidden;

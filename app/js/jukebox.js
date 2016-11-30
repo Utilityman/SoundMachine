@@ -7,6 +7,7 @@
   TODO: Shuffle all with many songs slows the window,
         limit the amount of displayed songs to something reasonable
   TODO: Reproduce bug where user can't use prev. (Try skipping then using prev)
+  TODO: Reproduce bug where user can't use skip
   TODO: file-not-found stops everything! howto handle 'onloaderror'
 
 */
@@ -72,11 +73,11 @@ var Jukebox = function()
     {
         strokeWidth: 6,
         trailWidth: 3,
-        color: '#8888CC',
+        color: '#6868CC',
         duration: 0,
         trailColor: '#eee',
-        from: {color: '#8888CC', a:0},
-        to: {color: '#0000FF', a:1},
+        from: {color: '#6868CC', a:0},
+        to: {color: '#5555FF', a:1},
         step: function(state, circle)
         {
             circle.path.setAttribute('stroke', state.color);
@@ -165,7 +166,6 @@ Jukebox.prototype =
                     self.circle.set(self.player.seek() / self.player.duration());
                     self.circle.animate(1);
                     self.wave.setSpeed(.0120);
-                    self.busy = false;
                 },
                 onload: function()
                 {
@@ -199,6 +199,7 @@ Jukebox.prototype =
                     });
                     if(self.autoplay)
                         self.player.play();
+                    self.busy = false;
                 },
                 onloaderror: function()
                 {
@@ -253,6 +254,8 @@ Jukebox.prototype =
         {
             self.playlist.push(song);
             insertToPlaylistGUI(song);
+            self.busy = false;
+
         }
     },
     insertToFront: function(song)
@@ -264,6 +267,7 @@ Jukebox.prototype =
         {
             self.playlist.unshift(song);
             insertToPlaylistGUI(song, 1);
+            self.busy = false;
         }
     },
     play: function()
@@ -301,6 +305,7 @@ Jukebox.prototype =
     skip: function()
     {
         if(this.player == null) return;
+
         if(this.playlist.length > 0 && !this.busy)
         {
             $("#playList li:nth-child(2)").remove();
@@ -324,12 +329,6 @@ Jukebox.prototype =
                 this.player.play();
             return;
         }
-        else if(this.playlist.length == 0)
-        {
-            this.player.stop();
-            this.isFinished = true;
-            this.insert(this.currentSong);
-        }
         else if(this.priorSongs.length > 0)
         {
             insertToPlaylistGUI(this.currentSong, 1);
@@ -341,6 +340,13 @@ Jukebox.prototype =
             this.currentSong = prevSong;
             this.insert(prevSong);
         }
+        else if(this.playlist.length == 0)
+        {
+            this.player.stop();
+            this.isFinished = true;
+            this.insert(this.currentSong);
+        }
+
     },
     pause: function()
     {
@@ -423,7 +429,7 @@ function insertToPlaylistGUI(song, mode)
     $('#playList li:not(:first-child)').hover(
         function()
         {
-            $(this).children('.songArtist').css('width', '150px');
+            $(this).children('.songArtist').css('width', '146px');
         },
         function()
         {
@@ -500,7 +506,7 @@ function moveUp(source)
         $('#playList li:not(:first-child)').hover(
             function()
             {
-                $(this).children('.songArtist').css('width', '150px');
+                $(this).children('.songArtist').css('width', '146px');
             },
             function()
             {
@@ -512,7 +518,7 @@ function moveUp(source)
         $('#playList li:not(:first-child)').hover(
             function()
             {
-                $(this).children('.songArtist').css('width', '150px');
+                $(this).children('.songArtist').css('width', '146px');
             },
             function()
             {
@@ -545,7 +551,7 @@ function moveDown(source)
         $('#playList li:not(:first-child)').hover(
             function()
             {
-                $(this).children('.songArtist').css('width', '150px');
+                $(this).children('.songArtist').css('width', '146px');
             },
             function()
             {
@@ -557,7 +563,7 @@ function moveDown(source)
         $('#playList li:not(:first-child)').hover(
             function()
             {
-                $(this).children('.songArtist').css('width', '150px');
+                $(this).children('.songArtist').css('width', '146px');
             },
             function()
             {
@@ -588,7 +594,7 @@ function moveTop(source)
         $('#playList li:not(:first-child)').hover(
             function()
             {
-                $(this).children('.songArtist').css('width', '150px');
+                $(this).children('.songArtist').css('width', '146px');
             },
             function()
             {

@@ -4,7 +4,7 @@
 var publicIp = require('public-ip');
 var app = null;
 var server = null;
-var socket_io = null;
+var io = null;
 var broadcasting = false;
 var room;
 
@@ -13,12 +13,13 @@ var room;
 var Room = function()
 {
     this.users = [];
+    this.password = "";
     this.collection = null;
 }
 
 var User = function(id, username)
 {
-    this.id = userID;
+    this.id = id;
     this.name = username;
 }
 
@@ -38,7 +39,7 @@ function toggleBroadcast()
         });
         app = require('express')();
         server = require('http').Server(app);
-        socket_io = require('socket.io')(server);
+        io = require('socket.io')(server);
 
         server.listen(8989, function()
         {
@@ -46,15 +47,15 @@ function toggleBroadcast()
         });
 
         room = new Room();
-        
-
-        socket_io.on('connection', function(socket)
+        var count = 0;
+        io.on('connection', function(socket)
         {
             console.log('User Connected!');
-            socket.emit('verifySession', { id: socket.id });
+            showNotification('User Connected!', 2500);
+            socket.emit('verificationRequest');
             //socket.broadcast.emit('newUser', {id : socket.id});
 
-            socket.on('verifyUser', function(data)
+            socket.on('userVerification', function(data)
             {
                 room.users.push(new User(socket.id, data.username));
                 var newRow = $('<tr class="active hidden"><td>' +
@@ -65,7 +66,8 @@ function toggleBroadcast()
                 socket.emit('serverInformation', {
                                     serverName: $("#roomName").val(),
                                     library: collection,
-                                    playlist: jukebox.playlist
+                                    playlist: jukebox.playlist,
+                                    socketID: socket.id
                                 });
             });
             socket.on('disconnect', function()
@@ -90,11 +92,13 @@ function toggleBroadcast()
 function connect(hostname, port, username, password)
 {
     if(!username) username = 'Nomy'
+    if(!password) password = 'TMP_EMPTY_PASS';
     room = require('socket.io-client')('http://' + hostname + ':' + port);
     console.log(room);
 
     room.on('connect', function () {
         console.log('Connected!');
+        showNotification('Connected to Server!', 2500);
     });
     room.on('socketID', function(data)
     {
@@ -112,12 +116,15 @@ function connect(hostname, port, username, password)
     {
         console.log("Reading New User!");
     });
-    room.on('verifySession', function(data)
+    room.on('verificationRequest', function()
     {
-        room.emit('verifyUser', {username: username});
-        console.log(data);
+        room.emit('userVerification', {username: username, password: password});
     });
     room.on('serverInformation', function(data)
+    {
+        console.log(data);
+    });
+    room.on('tick', function(data)
     {
         console.log(data);
     });
