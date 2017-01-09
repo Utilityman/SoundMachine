@@ -12,8 +12,25 @@
 
  var ytdl = require('ytdl-core');
 
+ //TODO: Make a switch to change default loadout?
+ /**
+    library mode is what the user decides to sort/show by
+    by default this mode is set to 'artists'.
+    i.e. libraryMode = 'song' hides albums and artists and shows
+                        a sorted library by song name.
+    Possible modes = {'artist', 'album', 'song'}
+*/
  var libraryMode = 'artist';
+ /**
+    When an artist is selected, does it show their songs or albums?
+    If hideAlbums is false, it will show their albums.
+    If hideAlbums is true, it will show their songs.
+ */
  var hideAlbums = false;
+ /**
+    Shuffle songs whenever adding or add in order?
+    By default, songs are shuffled when added.
+ */
  var alwaysShuffle = true;
 
 
@@ -51,6 +68,7 @@ function loadFromManifest()
     {
         if(err == null)
         {
+            // TODO: BAD READING FILES
             manifest = require(__dirname + "/data/manifest.json");
         }
         else if(err.code == 'ENOENT')
@@ -194,61 +212,38 @@ function addYoutubeFileToCollection(youtube, title, path)
  *
  *  Since this is the callback function for when the collection is
  *  completely created, this function calls the createManifest function.
+
+ * TODO: redo models
  */
 function setupLibraryPane()
 {
+    if(setup) return;   // is this what we want to do?
     // At this point, the async  process has called back...
     // so the collection can be written.
     createManifest();
-    var splitRegex = /[\s|/|(|)|&|'|\[|\]|!]/;
     var baseList = $("#resourceTree");
-    var artists = collection.getDepth(0);
+
+    var artists = collection.branches;
     for(var i = 0; i < artists.length; i++)
     {
         // Created li element for artists:
         // <li id="<Artist_Name>" class='artist' onclick="showArtists(this)">Artist Name</li>
-        baseList.append('<li id="' + artists[i].split(splitRegex).join('_') +
-                        '" class="artist' +
-                        '" onclick="showAlbums(this)">'+ artists[i] + '</li>');
-        $('#'+artists[i].split(splitRegex).join('_')).mousedown(function(event)
-        {
-            artistContextEvent(event);
-        });
-        var albums = collection.get(artists[i], 1);
+        addArtistDOM(baseList, artists[i].id, artists[i].item);
+
+        var albums = collection.getAlbumsFromArtist(artists[i].id);
         for(var j = 0; j < albums.length; j++)
         {
         //Created li element for albums:
         // <li class="album hidden <Artist_Name>" id="<Album_Name>_<Artist_Name>"
-        //                              onclick="showSongs(this)">Album Name</li>
+            addAlbumDOM(baseList, artists[i].id, albums[j].id, albums[j].item)
 
-            baseList.append('<li class="album hidden ' +
-                            artists[i].split(splitRegex).join('_') +
-                            '" id="' + albums[j].split(splitRegex).join('_') + "_" +
-                            artists[i].split(splitRegex).join('_') +
-                            '" onclick="showSongs(this)">' +
-                            albums[j] + '</li>');
-            $(document.getElementById(albums[j].split(splitRegex).join('_') + "_" +
-                  artists[i].split(splitRegex).join('_'))).mousedown(function(event)
-            {
-                albumContextEvent(event);
-            });
-            var songs = collection.getSongsSecure(artists[i], albums[j]);
-
+            var songs = collection.getSongsFromArtistAlbum(artists[i].id, albums[j].id);
             for(var k = 0; k < songs.length; k++)
             {
                 // Created li element for songs:
                 // <li id="<song_name>" class="song hidden <album_name>_<artist_name>"
-                //                            onclick="addToPlaylist(this)">Song Name</li>
-                baseList.append('<li id="' + songs[k].split(splitRegex).join('_') +
-                                '" class="song hidden ' +
-                                albums[j].split(splitRegex).join('_') + "_" +
-                                artists[i].split(splitRegex).join('_') +
-                                '" onclick="addToPlaylist(this)">' +
-                                songs[k] + '</li>');
-                $(document.getElementById(songs[k].split(splitRegex).join('_'))).mousedown(function(event)
-                {
-                    songContextEvent(event);
-                });
+                addSongDOM(baseList, artists[i].id, albums[j].id,
+                            songs[k].id, songs[k].item);
             }
         }
     }
@@ -258,23 +253,24 @@ function setupLibraryPane()
     toggleWindow();
     console.log('setup!');
     setup = true;
+    console.log(collection);
 }
 
 /**
+ *  TODO: SO MUCH REPEATED CODE! D:
  *  Like setupLibraryPane() but instead appends to it.
  */
 function appendToLibraryPane(miniCollection)
 {
     createManifest();
 
-    var splitRegex = /[\s|/|(|)|&|'|\[|\]|!]/;
     var baseList = $("#resourceTree");
     var artistList = $('#resourceTree .artist');
     var albumList = $('#resourceTree .album');
     var titles = $('#resourceTree .song');
 
     var found = false;
-    var newArtists = miniCollection.getDepth(0);
+    var newArtists = miniCollection.branches;
 
     // This is a mess but it works, if ever reading through - read carefully
     // Essentially this goes through each level of the miniColl
@@ -282,57 +278,35 @@ function appendToLibraryPane(miniCollection)
     {
         found = false;
         for(var i = 0; i < artistList.length; i++)
-            if(artistList[i].innerHTML == newArtists[j])
+            if(artistList[i].innerHTML == newArtists[j].item)
                 found = true;
         if(!found)
         {
-            baseList.append('<li id="' + newArtists[j].split(splitRegex).join('_') +
-                            '" class="artist' +
-                            '" onclick="showAlbums(this)">'+newArtists[j]+'</li>');
-            $('#'+newArtists[j].split(splitRegex).join('_')).mousedown(function(event)
-            {
-                artistContextEvent(event);
-            });
+            addArtistDOM(baseList, newArtists[j].id, newArtist[j].item);
         }
 
-        var newAlbums = miniCollection.get(newArtists[j], 1);
+        var newAlbums = miniCollection.getAlbumsFromArtist(artists[i].id);
         for(var k = 0; k < newAlbums.length; k++)
         {
             found = false;
             for(var i = 0; i < albumList.length; i++)
-                if(albumList[i].innerHTML == newAlbums[k])
+                if(albumList[i].innerHTML == newAlbums[k].item)
                     found = true;
             if(!found)
             {
-                baseList.append('<li class="album hidden ' +
-                                newArtists[j].split(splitRegex).join('_') +
-                                '" id="' + newAlbums[k].split(splitRegex).join('_') + "_" + newArtists[j].split(splitRegex).join('_') +
-                                '" onclick="showSongs(this)">' +
-                                newAlbums[k] + '</li>');
-                $(document.getElementById(newAlbums[k].split(splitRegex).join('_') + "_" + newArtists[j].split(splitRegex).join('_')))
-                    .mousedown(function(event)
-                    {
-                        albumContextEvent(event);
-                    });
+                addAlbumDOM(baseList, newArtists[j].id, newAlbums[k].id, newAlbums[k].item)
             }
-            var newSongs = miniCollection.getSongsSecure(newArtists[j], newAlbums[k]);
+            var newSongs = miniCollection.getSongsFromArtistAlbum(artists[i].id, albums[j].id);
             for(var a = 0; a < newSongs.length; a++)
             {
                 found = false;
                 for(var i = 0; i < titles.length; i++)
-                    if(titles[i].innerHTML == newSongs[a])
+                    if(titles[i].innerHTML == newSongs[a].item)
                         found = true;
                 if(!found)
                 {
-                    baseList.append('<li id="' + newSongs[a].split(splitRegex).join('_') +
-                                    '" class="song hidden ' +
-                                    newAlbums[k].split(splitRegex).join('_') + "_" + newArtists[j].split(splitRegex).join('_') +
-                                    '" onclick="addToPlaylist(this)">' +
-                                    newSongs[a] + '</li>');
-                    $(document.getElementById(newSongs[a].split(splitRegex).join('_'))).mousedown(function(event)
-                    {
-                        songContextEvent(event);
-                    });
+                    addSongDOM(baseList, newArtists[j].id, newAlbums[k].id,
+                                newSongs[a].id, newSongs[a].item);
                 }
             }
         }
@@ -340,6 +314,48 @@ function appendToLibraryPane(miniCollection)
 
     miniCollection = new Tree();
     sortBy(libraryMode);
+}
+
+function addArtistDOM(list, artistID, artistItem)
+{
+    if(list === 'undefined' || artistID === 'undefined')
+        return console.log('DONT ADD UNDEFINED THINGS');
+    list.append('<li id="artist' + artistID +
+                    '" class="artist' +
+                    '" onclick="showAlbums(this)">'+ artistItem + '</li>');
+    $('#artist' + artistID).mousedown(function(event)
+    {
+        artistContextEvent(event);
+    });
+}
+
+function addAlbumDOM(list, artistID, albumID, albumItem)
+{
+    list.append('<li id="artist' + artistID + '-album' + albumID +
+                    '" class="artist' + artistID + ' album hidden' +
+                    '" onclick="showSongs(this)">' +
+                    albumItem + '</li>');
+    $('#artist' + artistID + '-album' + albumID).mousedown(function(event)
+    {
+        albumContextEvent(event);
+    });
+}
+
+function addSongDOM(list, artistID, albumID, songID, songItem)
+{
+    list.append('<li id="artist' + artistID +
+                    '-album' + albumID + '-song' + songID +
+                    '" class="artist' + artistID
+                    + '-album' + albumID +
+                    ' song hidden' +
+                    '" onclick="addToPlaylist(this)">' +
+                    songItem + '</li>');
+
+    $('#artist' + artistID + '-album' + albumID + '-song' +
+        songID).mousedown(function(event)
+    {
+        songContextEvent(event);
+    });
 }
 
 /**
@@ -351,12 +367,10 @@ function appendToLibraryPane(miniCollection)
  */
 function sortBy(sort)
 {
-    //$('#librarySettings').removeClass('active');
     $('#resourceTree #sortBy').removeClass('active');
-    //$('.setting').addClass('hidden');
     $('.sort').addClass('hidden');
     $('.addAll').addClass('hidden');
-    //$('.external').addClass('hidden');
+
     if(sort == 'album')
     {
         $('#hideAlbums').prop('disabled', true);
@@ -365,10 +379,15 @@ function sortBy(sort)
         $('#resourceTree .song').addClass('hidden');
         $('#resourceTree .album').removeClass('active');
         var albums = $("#resourceTree .album");
+
+        var resourceTree = $('#resourceTree');
         albums.removeClass('hidden');
-        sortLi(albums);
-        for(var i = albums.length - 1; i >= 0; i--)
-            $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(albums[i]);
+        albums.sort(function(a, b)
+        {
+            return $(a).text().toUpperCase().replace("THE ", "").localeCompare($(b).text().toUpperCase().replace("THE ", ""));
+        });
+        $.each(albums, function(idx, itm) {resourceTree.append(itm); });
+
         for(var i = 0; i < albums.length; i++)
         {
             var songs = $(document.getElementsByClassName(albums[i].id));
@@ -383,12 +402,14 @@ function sortBy(sort)
         libraryMode = 'song';
         $("#resourceTree .artist").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
+        var resourceTree = $('#resourceTree');
         var songs = $("#resourceTree .song");
         songs.removeClass('hidden');
-        sortLi(songs);
-        for(var i = songs.length - 1; i >= 0; i--)
-            $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(songs[i]);
-        return;
+        songs.sort(function(a, b)
+        {
+            return $(a).text().toUpperCase().replace("THE ", "").localeCompare($(b).text().toUpperCase().replace("THE ", ""));
+        });
+        $.each(songs, function(idx, itm) {resourceTree.append(itm); });
     }
     else if(sort == 'artist')
     {
@@ -398,10 +419,15 @@ function sortBy(sort)
         $('#resourceTree .song').addClass('hidden');
 
         var artists = $("#resourceTree .artist");
+
+        var resourceTree = $('#resourceTree');
         artists.removeClass('hidden');
-        sortLi(artists);
-        for(var i = artists.length - 1; i >= 0; i--)
-            $("#resourceTree li:eq(" + SETTING_ELE_COUNT + ")").after(artists[i]);
+        artists.sort(function(a, b)
+        {
+            return $(a).text().toUpperCase().replace("THE ", "").localeCompare($(b).text().toUpperCase().replace("THE ", ""));
+        });
+        $.each(artists, function(idx, itm) {resourceTree.append(itm); });
+
         for(var i = 0; i < artists.length; i++)
         {
             var albums = $(document.getElementsByClassName(artists[i].id));
@@ -417,28 +443,6 @@ function sortBy(sort)
     }
 }
 
-// TODO: Switch to quicksort
-function sortLi(elements)
-{
-    var splitRegex = /The_/;
-
-    for(var i = 0; i < elements.length; i++)
-    {
-        //var min = elements[i];
-        var replaceIndex = i;
-        for(var j = i; j < elements.length; j++)
-        {
-            if(elements[replaceIndex].id.split(splitRegex).join('') > elements[j].id.split(splitRegex).join(''))
-                replaceIndex = j;
-        }
-
-        var temp = elements[i];
-        elements[i] = elements[replaceIndex];
-        elements[replaceIndex] = temp;
-
-    }
-}
-
 /////////////////////////////////////////////////////
 /*//////////// BEGIN SHOW FUNCTIONS ///////////////*/
 /////////////////////////////////////////////////////
@@ -448,48 +452,40 @@ function sortLi(elements)
  */
 function showAlbums(origin)
 {
-    if($(document.getElementById(origin.getAttribute('id'))).hasClass('active'))
+    if($(origin).hasClass('active'))
     {
-        $("#resourceTree .album").addClass('hidden');
-        $("#resourceTree .song").addClass('hidden');
-        $("#resourceTree .active").removeClass('active');
-        return;
-    }
-    if(libraryMode == 'song')
-    {
-        // If an album is clicked somehow while in song preferring,
-        // Make sure albums and artists are hidden...
-        $("#resourceTree .album").addClass('hidden');
-        $("#rsourceTree .artist").addClass('hidden');
+        // collapse if clicked again
+        $(origin).removeClass('active');
+        $('.album').addClass('hidden');
+        $('.song').addClass('hidden');
     }
     else if(libraryMode == 'album')
     {
-        // This again, shouldn't be called but in case it is,
-        // Just hide all of the artists.
+        // this should not happen
         $("#resourceTree .artist").addClass('hidden');
+        showNotification("Something went wrong, but we fixed it :)");
+    }
+    else if(libraryMode == 'song')
+    {
+        $("#resourceTree .album").addClass('hidden');
+        $("#resourceTree .artist").addClass('hidden');
+        showNotification("Something went wrong, but we fixed it :)");
     }
     else if(libraryMode == 'artist')
     {
-        //$('#resourceTree .external').addClass('hidden');
-        //$("#resourceTree .setting").addClass('hidden');
-        //$("#resourceTree .sort").addClass('hidden');
-        $('#resourceTree .album').addClass('hidden');
-        $("#resourceTree .song").addClass('hidden');
         $('#resourceTree .active').removeClass('active');
-        $(document.getElementById(origin.getAttribute('id'))).addClass('active');
+        $(origin).addClass('active');
+        $('.album').addClass('hidden');
+        $('.song').addClass('hidden');
 
-
-        if(!hideAlbums)
-            $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
-        else if(hideAlbums)
+        if(!hideAlbums) // show albums
+            $('.' + $(origin).attr('id')).removeClass('hidden');
+        else
         {
-            var albums = $(document.getElementsByClassName(origin.getAttribute('id')));
-            for(var i = 0; i < albums.length; i++)
-            {
-                showSongs(albums[i]);
-            }
+            var albums = $('.' + $(origin).attr('id'));
         }
     }
+
     $('#artistMenu').addClass('hidden');
 }
 
@@ -530,17 +526,22 @@ function showSettings(origin)
  */
 function showSongs(origin)
 {
-    if($(document.getElementById(origin.getAttribute('id'))).hasClass('active'))
+    if($(origin).hasClass('active'))
     {
-        $("#resourceTree .song").addClass('hidden');
-        $(document.getElementById(origin.getAttribute('id'))).removeClass('active');
-        return;
+        // collapse if clicked again
+        $(origin).removeClass('active');
+        $('.song').addClass('hidden');
     }
-    if(!hideAlbums || libraryMode == 'album')
-        $("#resourceTree .song").addClass('hidden');
-    $("#resourceTree .album.active").removeClass('active');
-    $(document.getElementById(origin.getAttribute('id'))).addClass('active');
-    $(document.getElementsByClassName(origin.getAttribute('id'))).removeClass('hidden');
+    else if(hideAlbums || libraryMode == 'song')
+        $('#resourceTree .album').addClass('hidden');
+    else if(libraryMode == 'album' || libraryMode == 'artist')
+    {
+        $('#resourceTree .active').removeClass('active');
+        $(origin).addClass('active');
+        $('.song').addClass('hidden');
+
+        $('.' + $(origin).attr('id')).removeClass('hidden');
+    }
     $('#albumMenu').addClass('hidden');
 }
 
@@ -593,20 +594,46 @@ function showExternalOptions()
 }
 
 /**
+ * gets song form DOM
+ */
+ function getSongFromDOM(source)
+ {
+     if(!$(source).hasClass('song')) return null;
+     var songIDs = $(source).attr('id').split('-');
+     return collection.getSongSecure(
+         songIDs[0].replace(/\D/g,''),
+         songIDs[1].replace(/\D/g,''),
+         songIDs[2].replace(/\D/g,''))
+ }
+
+/**
  *  Song onlick event. This adds the clicked song to the playlist
  *  Also can simply be called if you find the song DOM element
  */
 function addToPlaylist(origin)
 {
-    // Relies on the song name being in the text of the origin...
-    // Might be safe to use most of the time?
-    // TODO: BREAKS* WHEN ADDING SONGS WITH THE SAME NAME
-    // TODO: Since song lookup is based on name,
-    //              it will return the wrong song given two songs with the same name
-    var collectionData = collection.get(origin.textContent, 3);
-    if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
+    var collectionData = getSongFromDOM(origin);
+
+    if(!collectionData) return console.log("unexpected crazy error with " + songIDs);
 
     jukebox.insert(new SongData(collectionData[0],
+        collectionData[0].substring(collectionData[0].length-3,
+            collectionData[0].length),
+            collectionData[3],
+            collectionData[2],
+            collectionData[1]));
+}
+
+/**
+ *  gets called from context menus after this song discovery process
+ */
+function addToFront(origin)
+{
+    var collectionData = getSongFromDOM(origin);
+
+    if(!collectionData) return console.log("unexpected crazy error with " + songIDs);
+
+    jukebox.insertToFront(new SongData(collectionData[0],
         collectionData[0].substring(collectionData[0].length-3,
             collectionData[0].length),
             collectionData[3],
@@ -668,20 +695,7 @@ function streamFromYoutube(yourl)
     else
     {
         $('#youtubeUpload').val('Searching...');
-        /*yourl = 'https://www.youtube.com/results?q=' + yourl.split(" ").join('+');
-        $.ajax({
-            url: yourl,
-            type: 'POST',
-            success: function(resp)
-            {
-                //console.log(resp);
-            },
-            error: function(er)
-            {
-                console.log('ERROR');
-                //console.log(er);
-            }
-        });*/
+
         $('#youtubeUpload').prop('disabled', false);
         $('#youtubeUpload').css('color','black');
         $('#youtubeUpload').val('Search Not Implemented Yet!');
@@ -693,22 +707,6 @@ function youtubeError(err)
     $('#youtubeUpload').val('Download Failed!');
     $('#youtubeUpload').prop('disabled', false);
     $('#youtubeUpload').css('color','black');
-}
-
-/**
- *  gets called from context menus after this song discovery process
- */
-function addToFront(origin)
-{
-    var collectionData = collection.get(origin.textContent, 3);
-    if(!collectionData) return console.log("unexpected crazy error with " + origin.textcontent);
-
-    jukebox.insertToFront(new SongData(collectionData[0],
-        collectionData[0].substring(collectionData[0].length-3,
-            collectionData[0].length),
-            collectionData[3],
-            collectionData[2],
-            collectionData[1]));
 }
 
 function addAll(mode)

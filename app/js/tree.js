@@ -1,15 +1,21 @@
+
+// TODO: How to wrap this up as an independent module
 var debugging = false;
 
 /**
     A tree with 4 levels
     Very customized for this project
 */
-var Tree = function(param)
+var Tree = function(param, id)
 {
-    if(param == undefined) if(debugging) console.log("tree created");
+    if(param === undefined) if(debugging) console.log("tree created");
     else if(debugging) console.log("tree created with item: " + param);
     this.item = param;
     this.branches = [];
+    if(id !== undefined)
+        this.id = id;
+    else
+        this.id = -1;
 }
 
 Tree.prototype.log = function()
@@ -52,7 +58,7 @@ Tree.prototype.addAll = function(artist, album, song, path)
         ;
     else
     {
-        var artistTree = new Tree(artist);
+        var artistTree = new Tree(artist, this.branches.length);
         this.branches.push(artistTree);
         firstLevel = artistTree;
     }
@@ -60,7 +66,7 @@ Tree.prototype.addAll = function(artist, album, song, path)
         ;
     else
     {
-        var albumTree = new Tree(album);
+        var albumTree = new Tree(album, firstLevel.branches.length);
         firstLevel.branches.push(albumTree);
         secondLevel = albumTree;
     }
@@ -68,7 +74,7 @@ Tree.prototype.addAll = function(artist, album, song, path)
         ;
     else
     {
-        var songTree = new Tree(song);
+        var songTree = new Tree(song, secondLevel.branches.length);
         secondLevel.branches.push(songTree);
         thirdLevel = songTree;
     }
@@ -78,36 +84,6 @@ Tree.prototype.addAll = function(artist, album, song, path)
     {
         thirdLevel.branches.push(new Tree(path));
     }
-}
-
-/**
- *  Gets all items of certain depth in the Tree
- *  note: O(n) for depth 0 but higher degrees for higher depths
- *  functionailty note: only depth of 0 and 1 coded.
- *  @param {number} depth - the depth of the items to search for
- *                  0 -- artists
- *                  1 -- albums
- *  @return {array} the set of items at that depth
- */
-Tree.prototype.getDepth = function(depth)
-{
-    var collection = [];
-    if(depth == 0)
-        collection = getBranchItems(this.branches);
-    else
-    {
-        for(var i = 0; i < this.branches.length; i++)
-        {
-            if(depth == 1)
-            {
-                var miniCollection = getBranchItems(this.branches[i].branches);
-                collection = collection.concat(miniCollection);
-            }
-
-        }
-    }
-
-    return collection;
 }
 
 /**
@@ -165,38 +141,26 @@ Tree.prototype.get = function(id, level)
     return collection;
 }
 
-/**
- *  As some albums have different artists because they're a collection
- *  this function will securely get a song based on the artist and album
- */
-Tree.prototype.getSongsSecure = function(artist, album)
+Tree.prototype.getAlbumsFromArtist = function(artistID)
 {
-    var tree = this.branches;
-    var collection = [];
-    // for all of the artists
-    for(var i = 0; i < tree.length; i++)
-    {
-        // if an artist matches the id
-        if(tree[i].item == artist)
-        {
-            // for all of the albums
-            for(var j = 0; j < tree[i].branches.length; j++)
-            {
-                // if the album matches the id
-                if(tree[i].branches[j].item == album)
-                {
-                    // get all of that albums songs
-                    collection = getBranchItems(tree[i].branches[j].branches);
-                    if(debugging)console.log(collection);
-                    break;
-                }
-            }
-        }
-    }
-    return collection;
+//    var tree = this.branches;
+    return this.branches[artistID].branches;
 }
 
+Tree.prototype.getSongsFromArtistAlbum = function(artistID, albumID)
+{
+    if(typeof artistID === "undefined" ||
+       typeof albumID === "undefined") return;
+    return this.branches[artistID].branches[albumID].branches;
+}
 
+Tree.prototype.getSongSecure = function(artistID, albumID, songID)
+{
+    return [this.branches[artistID].branches[albumID].branches[songID].branches[0].item,
+        this.branches[artistID].item,
+        this.branches[artistID].branches[albumID].item,
+        this.branches[artistID].branches[albumID].branches[songID].item];
+}
 
 /**
  *  Gets the items off of a certain branch.

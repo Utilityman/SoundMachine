@@ -41,7 +41,7 @@ function createWindow()
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
     // if the main window isn't opening, uncomment this to immediately see mainWindow/devTools
-    //mainWindow.webContents.openDevTools();  mainWindow.show();
+    mainWindow.webContents.openDevTools();  mainWindow.show();
     loadWindow.on('closed', () =>
     {
         loadWindow = null;

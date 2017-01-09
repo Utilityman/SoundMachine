@@ -14,6 +14,8 @@ var config = require(__dirname + '/data/config.json');
 var jsmediatags = require("jsmediatags");
 var genreData = require(__dirname + '/data/genre.json');
 
+$.fn.classList = function() {return this[0].className.split(/\s+/);};
+
 // Collections
 var collection = new Tree();
 var miniCollection = new Tree();
@@ -252,13 +254,14 @@ ipcRenderer.on('unfocus', (event, args) =>
     $('.contextContents').addClass('hidden');
 });
 
+// TODO: Notification does not fadeIn/Out anymore?
 function showNotification(message, time)
 {
     if(!$('#notification').hasClass('busy'))
     {
         $('#notification').addClass('busy');
         if(!message) message = "Someone was compelled to send a message " +
-                                "but with no contents...";
+                                "with no content...";
         if(!time) time = 1000;
         $('#notification').text(message);
         $('#notification').css('color', '#333333');
