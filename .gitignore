@@ -29,3 +29,5 @@ SoundMachine-win32-x64/
 ## Other Stuff
 .DS_Store
 *.swp
+
+app/data/manifest_copy.json

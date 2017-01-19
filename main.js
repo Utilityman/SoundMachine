@@ -2,15 +2,15 @@
 
 const electron = require('electron');
 const {ipcMain} = require('electron');
-var Menu = require('electron');
+//let Menu = require('electron');
 
 const {app} = electron;
 const {BrowserWindow} = electron;
 
-var mainWindow = null;
-var ready = false;
-var loadWindow = null;
-var selfDestructed = false;
+let mainWindow = null;
+let ready = false;
+let loadWindow = null;
+let selfDestructed = false;
 
 function createWindow()
 {
@@ -41,7 +41,7 @@ function createWindow()
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
     // if the main window isn't opening, uncomment this to immediately see mainWindow/devTools
-    mainWindow.webContents.openDevTools();  mainWindow.show();
+    //mainWindow.webContents.openDevTools();  mainWindow.show();
     loadWindow.on('closed', () =>
     {
         loadWindow = null;
@@ -63,9 +63,9 @@ function createWindow()
     mainWindow.on('blur', () => {
         mainWindow.webContents.send('unfocus', null);
     });
-    var ready = true;
+    let ready = true;
 
-    var template = [{
+    let template = [{
             label: "Application",
             submenu: [
                 { label: "About Application", selector: "orderFrontStandardAboutPanel:" },
@@ -118,7 +118,7 @@ ipcMain.on('toggleTools', (event, arg) =>
 
 ipcMain.on('toggleWindow', (event, arg) =>
 {
-    var visibility = mainWindow.isVisible();
+    let visibility = mainWindow.isVisible();
     if(arg == '')
         if(!visibility)
             mainWindow.show();

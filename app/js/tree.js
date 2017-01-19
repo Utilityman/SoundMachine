@@ -1,12 +1,12 @@
 
 // TODO: How to wrap this up as an independent module
-var debugging = false;
+let debugging = false;
 
 /**
     A tree with 4 levels
     Very customized for this project
 */
-var Tree = function(param, id)
+let Tree = function(param, id)
 {
     if(param === undefined) if(debugging) console.log("tree created");
     else if(debugging) console.log("tree created with item: " + param);
@@ -23,15 +23,15 @@ Tree.prototype.log = function()
     if(debugging)
     {
         console.log("Artists: ");
-        for(var i = 0; i < this.branches.length; i++)
+        for(let i = 0; i < this.branches.length; i++)
         {
             console.log(this.branches[i].item);
             console.log("Albums: ");
-            for(var j = 0; j < this.branches[i].branches.length; j++)
+            for(let j = 0; j < this.branches[i].branches.length; j++)
             {
                 console.log(this.branches[i].branches[j].item);
                 console.log("Songs: ");
-                for(var k = 0; k < this.branches[i].branches[j].branches.length; k++)
+                for(let k = 0; k < this.branches[i].branches[j].branches.length; k++)
                 {
                     console.log(this.branches[i].branches[j].branches[k].item);
                 }
@@ -51,14 +51,14 @@ Tree.prototype.addAll = function(artist, album, song, path)
         album = "Unknown";
     if(song === undefined)
         song = path.substring(path.lastIndexOf('/')+1);
-    var firstLevel;
-    var secondLevel;
-    var thirdLevel;
+    let firstLevel;
+    let secondLevel;
+    let thirdLevel;
     if(firstLevel = contains(this.branches, artist))
         ;
     else
     {
-        var artistTree = new Tree(artist, this.branches.length);
+        let artistTree = new Tree(artist, this.branches.length);
         this.branches.push(artistTree);
         firstLevel = artistTree;
     }
@@ -66,7 +66,7 @@ Tree.prototype.addAll = function(artist, album, song, path)
         ;
     else
     {
-        var albumTree = new Tree(album, firstLevel.branches.length);
+        let albumTree = new Tree(album, firstLevel.branches.length);
         firstLevel.branches.push(albumTree);
         secondLevel = albumTree;
     }
@@ -74,7 +74,7 @@ Tree.prototype.addAll = function(artist, album, song, path)
         ;
     else
     {
-        var songTree = new Tree(song, secondLevel.branches.length);
+        let songTree = new Tree(song, secondLevel.branches.length);
         secondLevel.branches.push(songTree);
         thirdLevel = songTree;
     }
@@ -86,64 +86,9 @@ Tree.prototype.addAll = function(artist, album, song, path)
     }
 }
 
-/**
- *  Gets the items from the id's branches
- *  note: the order of this function depends on the depth of the id
- *  @param {string} id - the name of the item of the tree you're looking for
- *  @param {int} level - the expected level of the items
- *              1 -- Match Artist (returns $[albums])
- *              2 -- Match Album (returns $[songs])
- *              3 -- Match Songs (returns [path, artist, album, title])
- *  @return {array} a collection of items that belong to the id
- */
-Tree.prototype.get = function(id, level)
-{
-    var tree = this.branches;
-    var collection = [];
-    // for all of the artists
-    for(var i = 0; i < tree.length; i++)
-    {
-        // if an artist matches the id
-        if(tree[i].item == id && level == 1)
-        {
-            // get all of their albums
-            collection = getBranchItems(tree[i].branches);
-            if(debugging)console.log(collection);
-            break;
-        }
-        // for all of the albums
-        for(var j = 0; j < tree[i].branches.length; j++)
-        {
-            // if the album matches the id
-            if(tree[i].branches[j].item == id && level == 2)
-            {
-                // get all of that albums songs
-                collection = getBranchItems(tree[i].branches[j].branches);
-                if(debugging)console.log(collection);
-                break;
-            }
-            // for all of the songs
-            for(var k = 0; k < tree[i].branches[j].branches.length; k++)
-            {
-                // if the song matches
-                if(tree[i].branches[j].branches[k].item == id && level == 3)
-                {
-                    collection = getBranchItems(tree[i].branches[j].branches[k].branches);
-                    collection.push(tree[i].item);
-                    collection.push(tree[i].branches[j].item);
-                    collection.push(tree[i].branches[j].branches[k].item);
-                    if(debugging)console.log(collection);
-                    break;
-                }
-            }
-        }
-    }
-    return collection;
-}
-
 Tree.prototype.getAlbumsFromArtist = function(artistID)
 {
-//    var tree = this.branches;
+//    let tree = this.branches;
     return this.branches[artistID].branches;
 }
 
@@ -162,13 +107,87 @@ Tree.prototype.getSongSecure = function(artistID, albumID, songID)
         this.branches[artistID].branches[albumID].branches[songID].item];
 }
 
+Tree.prototype.addNewArtist = function(newArtistName)
+{
+    let newID = this.branches.length;
+    let newArtistTree = new Tree(newArtistName, newID);
+    this.branches.push(newArtistTree);
+    return newID;
+}
+
+Tree.prototype.addNewAlbum = function(artistID, newAlbumName)
+{
+    let newID = this.branches[artistID].branches.length;
+    let newAlbumTree = new Tree(newAlbumName, newID);
+    this.branches[artistID].branches.push(newAlbumTree);
+    return newID;
+}
+
+Tree.prototype.addNewSong = function(artistID, albumID, newSongName)
+{
+    let newID = this.branches[artistID].branches[albumID].branches.length;
+    let newSongTree = new Tree(newSongName, newID);
+    this.branches[artistID].branches[albumID].branches.push(newSongTree);
+    return newID;
+}
+
+Tree.prototype.assignPathToUnassigned = function(artistID, albumID, songID, pathBranch)
+{
+    if(!Tree.prototype.isPrototypeOf(pathBranch[0]) &&
+        pathBranch[0].id === -1)
+        return false; // Invalid pathBranch - simple verification
+    this.branches[artistID].branches[albumID].branches[songID].branches = pathBranch;
+    return true;
+}
+
+Tree.prototype.containsArtist = function(artistName)
+{
+    for(let i = 0; i < this.branches.length; i++)
+    {
+        if(this.branches[i].item === artistName)
+            return this.branches[i].id;
+    }
+    return -1;
+}
+
+Tree.prototype.modifyArtistFromID = function(artistID, newItem)
+{
+    this.branches[artistID].item = newItem;
+}
+
+Tree.prototype.containsAlbum = function(artistID, albumName)
+{
+    for(let i = 0; i < this.branches[artistID].branches.length; i++)
+    {
+        if(this.branches[artistID].branches[i].item === albumName)
+            return this.branches[artistID].branches[i].id;
+    }
+    return -1;
+}
+
+Tree.prototype.containsSong = function(artistID, albumID, songName)
+{
+  let branch = this.branches[artistID].branches[albumID].branches;
+  for(let i = 0; i < branch.length; i++)
+  {
+    if(branch[i].item === songName)
+      return branch[i].id;
+  }
+  return -1;
+}
+
+Tree.prototype.modifyAlbumByID = function(artistID, albumID, newItem)
+{
+    this.branches[artistID].branches[albumID].item = newItem;
+}
+
 /**
  *  Gets the items off of a certain branch.
  */
  function getBranchItems(branches)
  {
-     var collection = [];
-     for(var i =0; i < branches.length; i++)
+     let collection = [];
+     for(let i =0; i < branches.length; i++)
      {
          collection.push(branches[i].item);
      }
@@ -177,7 +196,7 @@ Tree.prototype.getSongSecure = function(artistID, albumID, songID)
 
 function contains(list, obj)
 {
-    var i = list.length;
+    let i = list.length;
     while(i--)
     {
         if(list[i].item === obj)

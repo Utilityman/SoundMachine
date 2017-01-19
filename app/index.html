@@ -10,6 +10,7 @@
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
     <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="js/internal_libs/notify.min.js"></script>
     <script type='text/javascript' src='js/internal_libs/siriwave.js'></script>
     <script type="text/javascript" src="js/internal_libs/vanilla.js"></script>
 
@@ -114,13 +115,13 @@
                 <li class="sort hidden" onclick="sortBy('song')">Song Name (A-Z)</li>
                 <li class="sort hidden" onclick="sortBy('album')">Album (A-Z)</li>
                 <li class="setting hidden" id='externalOptions' onclick="showExternalOptions()">Add Song(s) To Library</li>
-                <li class='external hidden'><label id='selectFiles' for='uploadFile'>Select File(s)</label>
+                <li class='external hidden'><label class="red" id='selectFiles' for='uploadFile'>Select File(s)</label>
                     <input class='hidden' type="file" id="uploadFile" name="upload" multiple>
-                    <label class='hidden' id="addFiles" onclick='addUpload()'>Add File(s)</label></li>
+                    <label class='green hidden' id="addFiles" onclick='addUpload()'>Add File(s)</label></li>
                 <li class='external hidden'><input class='hidden' type='file' id='uploadDirectory'
                     name='upload' webkitdirectory directory multiple>
-                    <label id="selectDirectory" for='uploadDirectory'>Select Directory</label>
-                    <label class='hidden' id="addDirectory" onclick='addDirectory()'>Add Directory</label></li>
+                    <label class="red" id="selectDirectory" for='uploadDirectory'>Select Directory</label>
+                    <label class='hidden green' id="addDirectory" onclick='addDirectory()'>Add Directory</label></li>
                 <li class='external hidden'>
                     <input type='text' id='youtubeUpload' name='youtubeUpload' placeholder='YouTube URL or Search'>
                 </li>
@@ -189,7 +190,8 @@
             <li class="contextItem contextMenu" onclick="addArtistToJukebox()">Add Artist to Queue</li>
             <li class="contextItem contextMenu" onclick="addArtistUpNext()">Add Artist to Up Next</li>
             <li class="contextItem contextMenu" onclick="addArtistToPlaylist()">Add Artist to Playlist</li>
-            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Artist</li>
+            <li class='contextItem contextMenu metadata' onclick='modifyMetaData()'>Rename Artist</li>
+            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Delete Artist</li>
         </ul>
     </nav>
     <nav class="contextContents contextMenu hidden" id="albumMenu">
@@ -197,7 +199,8 @@
             <li class="contextItem contextMenu" onclick="addAlbumToJukebox()">Add Album to Queue</li>
             <li class="contextItem contextMenu" onclick="addAlbumUpNext()">Add Album to Up Next</li>
             <li class="contextItem contextMenu" onclick="addAlbumToPlaylist()">Add Album to Playlist</li>
-            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Remove Album</li>
+            <li class='contextItem contextMenu metadata' onclick='modifyMetaData()'>Rename Album</li>
+            <li class="contextItem contextMenu" onclick='removeTarget(this)'>Delete Album</li>
         </ul>
     </nav>
     <nav class='contextContents contextMenu hidden' id='songMenu'>
@@ -205,8 +208,8 @@
             <li class='contextItem contextMenu' onclick='addSongToJukebox()'>Add Song to Queue</li>
             <li class='contextItem contextMenu' onclick='addSongUpNext()'>Add Song Up Next</li>
             <li class="contextItem contextMenu" onclick="addSongToPlaylist()">Add Song to Playlist</li>
-            <li id='metadata' class='contextItem contextMenu' onclick='modifyMetaData()'>Modify Metadata</li>
-            <li class='contextItem contextMenu' onclick='removeTarget(this)'>Remove Song</li>
+            <li class='contextItem contextMenu metadata' onclick='modifyMetaData()'>Rename Song</li>
+            <li class='contextItem contextMenu' onclick='removeTarget(this)'>Delete Song</li>
         </ul>
     </nav>
     <nav id='connectWindow'>

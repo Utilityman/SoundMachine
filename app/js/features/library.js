@@ -7,10 +7,10 @@
  */
 
 
- var fs = require('fs');
- var path = require('path');
+ let fs = require('fs');
+ let path = require('path');
 
- var ytdl = require('ytdl-core');
+ let ytdl = require('ytdl-core');
 
  //TODO: Make a switch to change default loadout?
  /**
@@ -20,19 +20,18 @@
                         a sorted library by song name.
     Possible modes = {'artist', 'album', 'song'}
 */
- var libraryMode = 'artist';
+ let libraryMode = 'artist';
  /**
     When an artist is selected, does it show their songs or albums?
     If hideAlbums is false, it will show their albums.
     If hideAlbums is true, it will show their songs.
  */
- var hideAlbums = false;
+ let hideAlbums = false;
  /**
     Shuffle songs whenever adding or add in order?
     By default, songs are shuffled when added.
  */
- var alwaysShuffle = true;
-
+ let alwaysShuffle = true;
 
 $(document).ready(function()
 {
@@ -54,6 +53,7 @@ $(document).ready(function()
         $('#youtubeUpload').css('color','#666666');
         streamFromYoutube($('#youtubeUpload').val());
     });
+
 });
 
 /**
@@ -63,7 +63,7 @@ $(document).ready(function()
  */
 function loadFromManifest()
 {
-    var manifest;
+    let manifest;
     fs.stat(__dirname + "/data/manifest.json", function(err, stat)
     {
         if(err == null)
@@ -80,9 +80,9 @@ function loadFromManifest()
 
         if (manifest.branches && manifest.branches.length != 0)
         {
-            for(var i = 0; i < manifest.branches.length; i++)
-                    for(var j = 0; j < manifest.branches[i].branches.length; j++)
-                        for(var k = 0; k < manifest.branches[i].branches[j].branches.length; k++)
+            for(let i = 0; i < manifest.branches.length; i++)
+                    for(let j = 0; j < manifest.branches[i].branches.length; j++)
+                        for(let k = 0; k < manifest.branches[i].branches[j].branches.length; k++)
                             loadFile(manifest.branches[i].branches[j].branches[k].branches[0].item,
                                 manifest.branches[i].item,
                                 manifest.branches[i].branches[j].item,
@@ -101,10 +101,10 @@ function loadFromManifest()
  */
 function loadFile(param, artist, album, song)
 {
-    var lastIndex = param.lastIndexOf('.');
+    let lastIndex = param.lastIndexOf('.');
     if(lastIndex == -1) return "invalid file";
     if(!validFile(param)) return "file not found!";
-    var type = param.substring(lastIndex+1, param.length);
+    let type = param.substring(lastIndex+1, param.length);
 
     // Make sure the path is an accepted type
     if(type == 'mp3' || type == 'm4a' || type == 'webm')
@@ -124,7 +124,7 @@ function loadFile(param, artist, album, song)
             }
             else if(ext == 'webm')
             {
-                var fileName = path.substring(path.lastIndexOf("/") + 1);
+                let fileName = path.substring(path.lastIndexOf("/") + 1);
                 setTimeout(function() {
                     loadFileWrapUp("Unknown",
                                    "Unknown",
@@ -194,10 +194,6 @@ function loadFileWrapUp(artist, album, title, path)
 
 function addYoutubeFileToCollection(youtube, title, path)
 {
-    collection.addAll(youtube,
-                      youtube,
-                      title,
-                      path);
     miniCollection.addAll(youtube,
                         youtube,
                         title,
@@ -212,36 +208,29 @@ function addYoutubeFileToCollection(youtube, title, path)
  *
  *  Since this is the callback function for when the collection is
  *  completely created, this function calls the createManifest function.
-
- * TODO: redo models
+ *
+ *  We don't check for duplicate artists/albums/songs because -
+ *  @see Tree.prototype.addAll (tree.js 46)
  */
 function setupLibraryPane()
 {
     if(setup) return;   // is this what we want to do?
-    // At this point, the async  process has called back...
-    // so the collection can be written.
-    createManifest();
-    var baseList = $("#resourceTree");
 
-    var artists = collection.branches;
-    for(var i = 0; i < artists.length; i++)
+    createManifest();   // the collection is complete - so we do this
+    let baseList = $("#resourceTree");
+    let artists = collection.branches;
+    for(let i = 0; i < artists.length; i++)
     {
-        // Created li element for artists:
-        // <li id="<Artist_Name>" class='artist' onclick="showArtists(this)">Artist Name</li>
         addArtistDOM(baseList, artists[i].id, artists[i].item);
 
-        var albums = collection.getAlbumsFromArtist(artists[i].id);
-        for(var j = 0; j < albums.length; j++)
+        let albums = collection.getAlbumsFromArtist(artists[i].id);
+        for(let j = 0; j < albums.length; j++)
         {
-        //Created li element for albums:
-        // <li class="album hidden <Artist_Name>" id="<Album_Name>_<Artist_Name>"
             addAlbumDOM(baseList, artists[i].id, albums[j].id, albums[j].item)
 
-            var songs = collection.getSongsFromArtistAlbum(artists[i].id, albums[j].id);
-            for(var k = 0; k < songs.length; k++)
+            let songs = collection.getSongsFromArtistAlbum(artists[i].id, albums[j].id);
+            for(let k = 0; k < songs.length; k++)
             {
-                // Created li element for songs:
-                // <li id="<song_name>" class="song hidden <album_name>_<artist_name>"
                 addSongDOM(baseList, artists[i].id, albums[j].id,
                             songs[k].id, songs[k].item);
             }
@@ -257,63 +246,92 @@ function setupLibraryPane()
 }
 
 /**
- *  TODO: SO MUCH REPEATED CODE! D:
  *  Like setupLibraryPane() but instead appends to it.
+ *
+ *  Though this code may seem very similar to setupLibaryPane(),
+ *  it is incredibly different due to the tests that are run in
+ *  order to determine whether or not the artist/album/song is
+ *  a new entry and to determine the ID of each respective thing.
+ *
+ * breaks are used to speed up lookup from N time to N-remaining time
+ * continues are used to escape a bad iteration
  */
 function appendToLibraryPane(miniCollection)
 {
-    createManifest();
+    let baseList = $("#resourceTree");
+    let artistList = $('#resourceTree .artist');
+    let albumList = $('#resourceTree .album');
+    let titles = $('#resourceTree .song');
 
-    var baseList = $("#resourceTree");
-    var artistList = $('#resourceTree .artist');
-    var albumList = $('#resourceTree .album');
-    var titles = $('#resourceTree .song');
+    let found = false;
+    let newArtists = miniCollection.branches;
 
-    var found = false;
-    var newArtists = miniCollection.branches;
-
-    // This is a mess but it works, if ever reading through - read carefully
     // Essentially this goes through each level of the miniColl
-    for(var j = 0; j < newArtists.length; j++)
+    for(let j = 0; j < newArtists.length; j++)
     {
+        let artistID = -1;
         found = false;
-        for(var i = 0; i < artistList.length; i++)
+        for(let i = 0; i < artistList.length; i++)
             if(artistList[i].innerHTML == newArtists[j].item)
+            {
                 found = true;
+                artistID = $(artistList[i]).attr('id').replace(/\D/g,'');
+                break;
+            }
         if(!found)
         {
-            addArtistDOM(baseList, newArtists[j].id, newArtist[j].item);
+            artistID = collection.addNewArtist(newArtists[j].item);
+            addArtistDOM(baseList, artistID, newArtists[j].item);
         }
+        if(artistID === -1){ console.log("artistID retreival failed"); continue;}
 
-        var newAlbums = miniCollection.getAlbumsFromArtist(artists[i].id);
-        for(var k = 0; k < newAlbums.length; k++)
+        let newAlbums = miniCollection.getAlbumsFromArtist(newArtists[j].id);
+        for(let k = 0; k < newAlbums.length; k++)
         {
+            let albumID = -1;
             found = false;
-            for(var i = 0; i < albumList.length; i++)
+            for(let i = 0; i < albumList.length; i++)
                 if(albumList[i].innerHTML == newAlbums[k].item)
+                {
                     found = true;
+                    albumID = $(albumList[i]).attr('id').replace(/\D/g,'');
+                    break;
+                }
             if(!found)
             {
-                addAlbumDOM(baseList, newArtists[j].id, newAlbums[k].id, newAlbums[k].item)
+                albumID = collection.addNewAlbum(artistID, newAlbums[k].item);
+                addAlbumDOM(baseList, artistID, albumID, newAlbums[k].item);
             }
-            var newSongs = miniCollection.getSongsFromArtistAlbum(artists[i].id, albums[j].id);
-            for(var a = 0; a < newSongs.length; a++)
+
+            if(albumID === -1) { console.log("albumID retreival failed"); continue;}
+
+            let newSongs = miniCollection.getSongsFromArtistAlbum(newArtists[j].id, newAlbums[j].id);
+            for(let a = 0; a < newSongs.length; a++)
             {
+                let songID = -1;
                 found = false;
-                for(var i = 0; i < titles.length; i++)
+                for(let i = 0; i < titles.length; i++)
                     if(titles[i].innerHTML == newSongs[a].item)
+                    {
+                        // No need to save songID, the song already exists and we can loopback
                         found = true;
+                        break;
+                    }
                 if(!found)
                 {
-                    addSongDOM(baseList, newArtists[j].id, newAlbums[k].id,
-                                newSongs[a].id, newSongs[a].item);
+                    // get song ID, assign the collection a path to access, make DOM
+                    songID = collection.addNewSong(artistID, albumID, newSongs[a].item);
+                    if(collection.assignPathToUnassigned(artistID, albumID, songID, newSongs[a].branches))
+                        addSongDOM(baseList, artistID, albumID, songID, newSongs[a].item);
                 }
             }
         }
     }
 
+    createManifest();
     miniCollection = new Tree();
     sortBy(libraryMode);
+    $.notify("Songs Added", "success");
 }
 
 function addArtistDOM(list, artistID, artistItem)
@@ -378,9 +396,9 @@ function sortBy(sort)
         $("#resourceTree .artist").addClass('hidden');
         $('#resourceTree .song').addClass('hidden');
         $('#resourceTree .album').removeClass('active');
-        var albums = $("#resourceTree .album");
+        let albums = $("#resourceTree .album");
 
-        var resourceTree = $('#resourceTree');
+        let resourceTree = $('#resourceTree');
         albums.removeClass('hidden');
         albums.sort(function(a, b)
         {
@@ -388,10 +406,10 @@ function sortBy(sort)
         });
         $.each(albums, function(idx, itm) {resourceTree.append(itm); });
 
-        for(var i = 0; i < albums.length; i++)
+        for(let i = 0; i < albums.length; i++)
         {
-            var songs = $(document.getElementsByClassName(albums[i].id));
-            for(var j = 0; j < songs.length; j++)
+            let songs = $(document.getElementsByClassName(albums[i].id));
+            for(let j = 0; j < songs.length; j++)
                 $(albums[i]).after(songs[j]);
         }
         return;
@@ -402,8 +420,8 @@ function sortBy(sort)
         libraryMode = 'song';
         $("#resourceTree .artist").addClass('hidden');
         $('#resourceTree .album').addClass('hidden');
-        var resourceTree = $('#resourceTree');
-        var songs = $("#resourceTree .song");
+        let resourceTree = $('#resourceTree');
+        let songs = $("#resourceTree .song");
         songs.removeClass('hidden');
         songs.sort(function(a, b)
         {
@@ -418,9 +436,9 @@ function sortBy(sort)
         $('#resourceTree .album').addClass('hidden');
         $('#resourceTree .song').addClass('hidden');
 
-        var artists = $("#resourceTree .artist");
+        let artists = $("#resourceTree .artist");
 
-        var resourceTree = $('#resourceTree');
+        let resourceTree = $('#resourceTree');
         artists.removeClass('hidden');
         artists.sort(function(a, b)
         {
@@ -428,14 +446,14 @@ function sortBy(sort)
         });
         $.each(artists, function(idx, itm) {resourceTree.append(itm); });
 
-        for(var i = 0; i < artists.length; i++)
+        for(let i = 0; i < artists.length; i++)
         {
-            var albums = $(document.getElementsByClassName(artists[i].id));
-            for(var j = 0; j < albums.length; j++)
+            let albums = $(document.getElementsByClassName(artists[i].id));
+            for(let j = 0; j < albums.length; j++)
             {
                 $(artists[i]).after(albums[j]);
-                var songs = $(document.getElementsByClassName(albums[j].id));
-                for(var k = 0; k < songs.length; k++)
+                let songs = $(document.getElementsByClassName(albums[j].id));
+                for(let k = 0; k < songs.length; k++)
                     $(albums[j]).after(songs[k]);
             }
         }
@@ -452,7 +470,7 @@ function sortBy(sort)
  */
 function showAlbums(origin)
 {
-    if($(origin).hasClass('active'))
+    if($(origin).hasClass('active') || $('.' + $(origin).attr('id')).hasClass('active'))
     {
         // collapse if clicked again
         $(origin).removeClass('active');
@@ -463,13 +481,13 @@ function showAlbums(origin)
     {
         // this should not happen
         $("#resourceTree .artist").addClass('hidden');
-        showNotification("Something went wrong, but we fixed it :)");
+        $.notify("Something went wrong, but we fixed it :)", "warn");
     }
     else if(libraryMode == 'song')
     {
         $("#resourceTree .album").addClass('hidden');
         $("#resourceTree .artist").addClass('hidden');
-        showNotification("Something went wrong, but we fixed it :)");
+        $.notify("Something went wrong, but we fixed it :)", "warn");
     }
     else if(libraryMode == 'artist')
     {
@@ -482,7 +500,7 @@ function showAlbums(origin)
             $('.' + $(origin).attr('id')).removeClass('hidden');
         else
         {
-            var albums = $('.' + $(origin).attr('id'));
+            let albums = $('.' + $(origin).attr('id'));
         }
     }
 
@@ -599,11 +617,11 @@ function showExternalOptions()
  function getSongFromDOM(source)
  {
      if(!$(source).hasClass('song')) return null;
-     var songIDs = $(source).attr('id').split('-');
+     let songIDs = $(source).attr('id').split('-');
      return collection.getSongSecure(
          songIDs[0].replace(/\D/g,''),
          songIDs[1].replace(/\D/g,''),
-         songIDs[2].replace(/\D/g,''))
+         songIDs[2].replace(/\D/g,''));
  }
 
 /**
@@ -612,7 +630,8 @@ function showExternalOptions()
  */
 function addToPlaylist(origin)
 {
-    var collectionData = getSongFromDOM(origin);
+    let originID = $(origin).attr('id');
+    let collectionData = getSongFromDOM(origin);
 
     if(!collectionData) return console.log("unexpected crazy error with " + songIDs);
 
@@ -621,7 +640,8 @@ function addToPlaylist(origin)
             collectionData[0].length),
             collectionData[3],
             collectionData[2],
-            collectionData[1]));
+            collectionData[1],
+            originID));
 }
 
 /**
@@ -629,7 +649,8 @@ function addToPlaylist(origin)
  */
 function addToFront(origin)
 {
-    var collectionData = getSongFromDOM(origin);
+    let originID = $(origin).attr('id');
+    let collectionData = getSongFromDOM(origin);
 
     if(!collectionData) return console.log("unexpected crazy error with " + songIDs);
 
@@ -638,7 +659,8 @@ function addToFront(origin)
             collectionData[0].length),
             collectionData[3],
             collectionData[2],
-            collectionData[1]));
+            collectionData[1],
+            originID));
 }
 
 /////////////////////////////////////////////////////
@@ -647,9 +669,98 @@ function addToFront(origin)
 
 function modifyMetaData()
 {
-    $('#metadata').text('Coming Soon!');
+    console.log(contextTarget);
+    $('.contextContents').addClass('hidden');
+    $(contextTarget).notify({},
+    {
+        elementPosition: 'left',
+        style: 'metadata',
+        autoHide: false,
+        clickToHide: false
+    });
+    $('.metadataEntry').val($(contextTarget).text());
+    $('.metadataEntry').keypress(function(e)
+    {
+        if(e.keyCode == 13)
+            submitMetadata();
+    });
+    $('.metadataEntry').focus();
 }
 
+function submitMetadata()
+{
+    if($(contextTarget).hasClass('artist'))
+    {
+        let artistID = $(contextTarget).attr('id').replace(/\D/g,'');
+        let overwriteID = collection.containsArtist($('.metadataEntry').val());
+        console.log(overwriteID);
+        if(overwriteID !== -1)
+        {
+            $('.notifyjs-wrapper').trigger('notify-hide');
+            if(artistID != overwriteID)
+                $.notify("Cannot Overwrite Artists!", "warn");
+        }
+        else {
+            let changeVal = $('.metadataEntry').val();
+            collection.modifyArtistFromID(artistID, changeVal);
+            $(contextTarget).text(changeVal);
+            $('.notifyjs-wrapper').trigger('notify-hide');
+            $.notify("Renamed Artist", "success");
+        }
+    }
+    else if($(contextTarget).hasClass('album'))
+    {
+        console.log('album handling');
+        console.log($('.metadataEntry').val());
+        // TODO: $('.metadataEntry').val() stops working after cannot overwrite albums once?
+        let albumIDs = $(contextTarget).attr('id').split('-');
+        let overwriteID = collection.containsAlbum(albumIDs[0].replace(/\D/g,''),
+                                                    $('.metadataEntry').val());
+        if(overwriteID !== -1)
+        {
+            $('.notifyjs-wrapper').trigger('notify-hide');
+            if(albumIDs[1].replace(/\D/g,'') != overwriteID)
+                $.notify("Cannot Overwrite Albums!", "warn");
+        }
+        else {
+            let changeVal = $('.metadataEntry').val();
+            collection.modifyAlbumByID(albumIDs[0].replace(/\D/g,''),
+                                        albumIDs[1].replace(/\D/g,''),
+                                        changeVal);
+            $(contextTarget).text(changeVal);
+            $('.notifyjs-wrapper').trigger('notify-hide');
+            $.notify("Renamed Album", "success");
+        }
+    }
+    else if ($(contextTarget).hasClass('song'))
+    {
+        console.log('song handling');
+        let songIDs = $(contextTarget).attr('id').split('-');
+        let overwriteID = collection.containsSong(songIDs[0].replace(/\D/g, ''),
+                                                  songIDs[1].replace(/\D/g, ''),
+                                                  $('.metadataEntry').val());
+        if(overwriteID !== -1) {
+            $('.notifyjs-wrapper').trigger('notify-hide');
+            if(songIDs[2].replace(/\D/g,'') != overwriteID)
+                $.notify("Cannot Overwrite Song!", "warn");
+        }
+        else {
+            let changeVal = $('.metadataEntry').val();
+            collection.modifySongByID(songIDs[0].replace(/\D/g, ''),
+                                        songIDs[1].replace(/\D/g,''),
+                                        songIDs[2].replace(/\D/g,''),
+                                        changeVal);
+            $(contextTarget).text(changeVal);
+            $('.notifyjs-wrapper').trigger('notify-hide');
+            $.notify('Renamed Song', 'success');
+        }
+    }
+
+    //finally rewrite the manifest to save changes
+    createManifest();
+}
+
+// TODO: Consider how removing anything from the tree will impact IDs.
 function removeTarget(source)
 {
     $(source).text('Coming Soon!');
@@ -679,7 +790,7 @@ function streamFromYoutube(yourl)
         ytdl.getInfo(yourl, function(err, info)
         {
             if(err){youtubeError(err); return; }
-            var stream = ytdl(yourl, { filter: function(format) {return format.container === 'webm'} })
+            let stream = ytdl(yourl, { filter: function(format) {return format.container === 'webm'} })
                             .pipe(fs.createWriteStream(__dirname + '/data/downloads/' + info.title + '.webm'))
                             .on('finish', function()
                             {
@@ -713,37 +824,37 @@ function addAll(mode)
 {
     if(mode == 'album')
     {
-        var albums = $("#resourceTree .album");
+        let albums = $("#resourceTree .album");
         sortLi(albums);
-        for(var i = 0; i < albums.length; i++)
+        for(let i = 0; i < albums.length; i++)
         {
-            var songs = $(document.getElementsByClassName(albums[i].id));
-            for(var j = 0; j < songs.length; j++)
+            let songs = $(document.getElementsByClassName(albums[i].id));
+            for(let j = 0; j < songs.length; j++)
                 addToPlaylist(songs[j]);
         }
         return;
     }
     else if(mode == 'song')
     {
-        var songs = $("#resourceTree .song");
+        let songs = $("#resourceTree .song");
         sortLi(songs);
-        for(var j = 0; j < songs.length; j++)
+        for(let j = 0; j < songs.length; j++)
             addToPlaylist(songs[j]);
         return;
     }
     else if(mode == 'artist')
     {
-        var artists = $("#resourceTree .artist");
+        let artists = $("#resourceTree .artist");
         sortLi(artists);
 
-        for(var i = 0; i < artists.length; i++)
+        for(let i = 0; i < artists.length; i++)
         {
-            var albums = $(document.getElementsByClassName(artists[i].id));
-            for(var j = 0; j < albums.length; j++)
+            let albums = $(document.getElementsByClassName(artists[i].id));
+            for(let j = 0; j < albums.length; j++)
             {
-                var songs = $(document.getElementsByClassName(albums[j].id));
+                let songs = $(document.getElementsByClassName(albums[j].id));
 
-                for(var k = 0; k < songs.length; k++)
+                for(let k = 0; k < songs.length; k++)
                     addToPlaylist(songs[k]);
 
             }
@@ -752,10 +863,10 @@ function addAll(mode)
     }
     else if(mode == 'shuffle')
     {
-        var songs = $("#resourceTree .song");
+        let songs = $("#resourceTree .song");
         shuffle(songs);
         shuffle(songs);
-        for(var j = 0; j < songs.length; j++)
+        for(let j = 0; j < songs.length; j++)
             addToPlaylist(songs[j]);
         return;
     }
@@ -767,9 +878,9 @@ function addUpload()
     $('#addFiles').addClass('hidden');
     //$('#externalOptions').removeClass('active');
     //$('.external').addClass('hidden');
-    var upload = $("#uploadFile");
+    let upload = $("#uploadFile");
     asyncCallsToDo = upload[0].files.length;
-    for(var i = 0; i < upload[0].files.length; i++)
+    for(let i = 0; i < upload[0].files.length; i++)
     {
         loadFile(upload[0].files[i].path);
     }
@@ -783,17 +894,17 @@ function addDirectory()
     $('#selectDirectory').removeClass('hidden');
     //$('#externalOptions').removeClass('active');
     //$('.external').addClass('hidden');
-    var dir = $('#uploadDirectory')[0].files[0].path;
-    var walk = function(dir, done)
+    let dir = $('#uploadDirectory')[0].files[0].path;
+    let walk = function(dir, done)
     {
-      var results = [];
+      let results = [];
       fs.readdir(dir, function(err, list)
       {
         if (err) return done(err);
-        var i = 0;
+        let i = 0;
         (function next()
         {
-          var file = list[i++];
+          let file = list[i++];
           if (!file) return done(null, results);
           file = path.resolve(dir, file);
           fs.stat(file, function(err, stat)
@@ -821,14 +932,14 @@ function addDirectory()
         if (err) throw err;
 
         asyncCallsToDo = 0;
-        for(var i = 0; i < results.length; i++)
+        for(let i = 0; i < results.length; i++)
             if(results[i].indexOf('.mp3') !== -1 || results[i].indexOf('.m4a') !== -1 || results[i].indexOf('.webm') !== -1)
             {
                 asyncCallsToDo++;
             }
 
 
-        for(var i = 0; i < results.length; i++)
+        for(let i = 0; i < results.length; i++)
         {
             if(results[i].indexOf('.mp3') !== -1 || results[i].indexOf('m4a') !== -1 || results[i].indexOf('.webm') !== -1)
                 loadFile(results[i]);
@@ -886,7 +997,6 @@ function songContextEvent(e)
 {
     if(e.which == 3)
     {
-        console.log($(window).height() + " " + e.pageY + " " + $('#songMenu').height());
         $('.contextContents').addClass('hidden');
         $('.selected').removeClass('selected');
         $('#songMenu').removeClass('hidden');
@@ -902,20 +1012,20 @@ function songContextEvent(e)
 
 function addArtistToJukebox()
 {
-    var artist = contextTarget.id;
-    var albums = $(document.getElementsByClassName(artist));
-    var songs = [];
-    for(var i = 0; i < albums.length; i++)
+    let artist = contextTarget.id;
+    let albums = $(document.getElementsByClassName(artist));
+    let songs = [];
+    for(let i = 0; i < albums.length; i++)
     {
-        var albumSongs = $(document.getElementsByClassName(albums[i].getAttribute('id')));
-        for(var j = 0; j < albumSongs.length; j++)
+        let albumSongs = $(document.getElementsByClassName(albums[i].getAttribute('id')));
+        for(let j = 0; j < albumSongs.length; j++)
         {
             songs.push(albumSongs[j]);
         }
     }
     if(alwaysShuffle)
         shuffle(songs);
-    for(var i = 0; i < songs.length; i++)
+    for(let i = 0; i < songs.length; i++)
     {
         addToPlaylist(songs[i]);
     }
@@ -924,30 +1034,30 @@ function addArtistToJukebox()
 
 function addArtistUpNext()
 {
-    var artist = contextTarget.id;
-    var albums = $(document.getElementsByClassName(artist));
+    let artist = contextTarget.id;
+    let albums = $(document.getElementsByClassName(artist));
 
-    var songs = [];
-    for(var i = 0; i < albums.length; i++)
+    let songs = [];
+    for(let i = 0; i < albums.length; i++)
     {
-        var albumSongs = $(document.getElementsByClassName(albums[i].getAttribute('id')));
-        for(var j = 0; j < albumSongs.length; j++)
+        let albumSongs = $(document.getElementsByClassName(albums[i].getAttribute('id')));
+        for(let j = 0; j < albumSongs.length; j++)
             songs.push(albumSongs[j]);
     }
     if(alwaysShuffle)
         shuffle(songs);
-    for(var i = 0; i < songs.length; i++)
+    for(let i = 0; i < songs.length; i++)
         addToFront(songs[i]);
     $('#artistMenu').addClass('hidden');
 }
 
 function addAlbumToJukebox()
 {
-    var album = contextTarget.id;
-    var albumSongs = $(document.getElementsByClassName(album));
+    let album = contextTarget.id;
+    let albumSongs = $(document.getElementsByClassName(album));
     if(alwaysShuffle)
         shuffle(albumSongs);
-    for(var i = 0; i < albumSongs.length; i++)
+    for(let i = 0; i < albumSongs.length; i++)
         addToPlaylist(albumSongs[i]);
 
     $('#albumMenu').addClass('hidden');
@@ -955,11 +1065,11 @@ function addAlbumToJukebox()
 
 function addAlbumUpNext()
 {
-    var album = contextTarget.id;
-    var albumSongs = $(document.getElementsByClassName(album));
+    let album = contextTarget.id;
+    let albumSongs = $(document.getElementsByClassName(album));
     if(alwaysShuffle)
         shuffle(albumSongs);
-    for(var i = 0; i < albumSongs.length; i++)
+    for(let i = 0; i < albumSongs.length; i++)
     {
         addToFront(albumSongs[i]);
     }

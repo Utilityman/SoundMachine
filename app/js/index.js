@@ -4,34 +4,33 @@
  *  This file is essentially the main of the rendering process.
  */
 
-var SETTING_ELE_COUNT = 0;
+let SETTING_ELE_COUNT = 0;
 
 // Electron and Config Stuffs
-var {ipcRenderer} = require('electron');
-var config = require(__dirname + '/data/config.json');
+let {ipcRenderer} = require('electron');
+let config = require(__dirname + '/data/config.json');
 
 // Music Stuffs
-var jsmediatags = require("jsmediatags");
-var genreData = require(__dirname + '/data/genre.json');
+let jsmediatags = require("jsmediatags");
+let genreData = require(__dirname + '/data/genre.json');
 
 $.fn.classList = function() {return this[0].className.split(/\s+/);};
 
 // Collections
-var collection = new Tree();
-var miniCollection = new Tree();
-var connectedCollections = [];
+let collection = new Tree();
+let miniCollection = new Tree();
+let connectedCollections = [];
 
-// Window Variables
-var miniplayer = false;
-var miniplayerElementIndex = 0;
-var col1Width = 350;
+// Window letiables
+let miniplayer = false;
+let miniplayerElementIndex = 0;
+let col1Width = 350;
 
-// Other Variables
-var setup = false;
-var asyncCalls = 0;
-var asyncCallsToDo = 0;
-var contextTarget = null;
-
+// Other letiables
+let setup = false;
+let asyncCalls = 0;
+let asyncCallsToDo = 0;
+let contextTarget = null;
 
 $(document).ready(function()
 {
@@ -55,15 +54,41 @@ $(document).ready(function()
             alert("Left Click - Change Channel")
         }
     });
+    $.notify.defaults(
+    {
+        className: "info",
+        autoHideDelay:1500,
+    });
+    $.notify.addStyle('metadata',
+    {
+        html:
+        "<div class='dont-close'>" +
+            "<div class='clearfix dont-close'>" +
+                "<div class='input dont-close'>" +
+                    "<label class='dont-close' onclick='submitMetadata()'>" +
+                    "&check;</label>" +
+                    "<input class='dont-close metadataEntry' type='text'>" +
+                "</div>" +
+        "</div>"
+    });
 });
 
 $(document).bind("mousedown", function(e)
 {
-    if(e.which == 1 && !($(e.target).hasClass('contextMenu')))
+    // TODO: get rid of hasClass 'contextMenu' in favor of the aptly named dont-close
+    if(e.which == 1 && !($(e.target).hasClass('contextMenu')) &&
+            !($(e.target).hasClass('dont-close')))
     {
         console.log('BLAM!');
         $('.contextContents').addClass('hidden');
         $('.selected').removeClass('selected');
+        $('.notifyjs-wrapper').trigger('notify-hide');
+
+    }
+    // if its a right click we can still hide the notifications
+    if(e.which == 3)
+    {
+        $('.notifyjs-wrapper').trigger('notify-hide');
     }
 });
 
@@ -170,10 +195,10 @@ function resizeWindow()
     }
 }
 
-/* TODO: Work on the miniplayer*/
+/* TODO: Work on the miniplayer CSS*/
 function convertToMiniplayer()
 {
-    //var channelInfo = $(".channel.active span");
+    //let channelInfo = $(".channel.active span");
     //channelInfo.css("height", "28px");
     //channelInfo.css("background", "gray");
     //channelInfo.css("max-width", "100%");
@@ -195,7 +220,7 @@ function convertFromMiniplayer()
  */
 function shuffle(array)
 {
-    var m = array.length, t, i;
+    let m = array.length, t, i;
 
     // While there remain elements to shuffle…
     while (m) {
@@ -253,33 +278,3 @@ ipcRenderer.on('unfocus', (event, args) =>
 {
     $('.contextContents').addClass('hidden');
 });
-
-// TODO: Notification does not fadeIn/Out anymore?
-function showNotification(message, time)
-{
-    if(!$('#notification').hasClass('busy'))
-    {
-        $('#notification').addClass('busy');
-        if(!message) message = "Someone was compelled to send a message " +
-                                "with no content...";
-        if(!time) time = 1000;
-        $('#notification').text(message);
-        $('#notification').css('color', '#333333');
-
-        $('#notificationWindow').css('left',
-                            ($(window).width() / 2) -
-                            $('#notification').width());
-        $('#notificationWindow').css('top',
-                            $(window).height() / 2 -
-                            $('#notification').height());
-
-        $('#notification').fadeIn(1000, function()
-        {
-            setTimeout(function()
-            {
-                $('#notification').fadeOut(1000);
-                $('#notification').removeClass('busy');
-            }, time);
-        });
-    }
-}

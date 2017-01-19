@@ -9,52 +9,41 @@
   TODO: Reproduce bug where user can't use prev. (Try skipping then using prev)
   TODO: Reproduce bug where user can't use skip
   TODO: file-not-found stops everything! howto handle 'onloaderror'
-
+  TODO: Get rid of waves - unecessary time spent doing not much - espeically since most of the time we have album art
 */
 
 const SKIP_DELAY = 3.0;
-const PLAYLIST_LENGTH = 22;
+const PLAYLIST_LENGTH = 31;
 
-var howler = require('howler');
-var ProgressBar = require('progressbar.js');
+let howler = require('howler');
+let ProgressBar = require('progressbar.js');
 
-function SongData(path, type, name, album, artist)
+function SongData(path, type, name, album, artist, songID)
 {
     this.path = path;
     this.type = type;
     this.name = name;
     this.album = album;
     this.artist = artist;
+    this.id = 'sd-' + songID;
 }
 
-var Jukebox = function()
+let Jukebox = function()
 {
     // Howler Music Player
      this.player = null;
 
-     // Playlist Variables
+     // Playlist variables
      this.playlist = [];
      this.currentSong = null;
      this.priorSongs = [];
 
-     // Candy Variables
+     // Candy variables
      this.primaryColor = '';
      this.secondaryColor = '';
      this.mode = 'default';
-     this.wave = new SiriWave({
-         container: waves,
-         width: 350,
-         height: 300,
-         cover: true,
-         speed: .0040,
-         amplitude: 0.5,
-         frequency: 1.75,
-         color: '#FFF',
-     });
-     this.wave.start();
-     modColor(this.wave, 255, 255, 255, 0);
 
-     // Variables that we handle since we load one track at a time
+     // vartiables that we handle since we load one track at a time
     this.autoplay = false;
     this.repeat = false;
     this.volume = 0.5;
@@ -62,7 +51,7 @@ var Jukebox = function()
     this.isFinished = false;
     this.tempo = 60;
 
-    // variables about skipping.
+    // vartiables about skipping.
     this.skips = 0;
     this.busy = false;
 
@@ -83,6 +72,7 @@ var Jukebox = function()
             circle.path.setAttribute('stroke', state.color);
         },
     });
+
     this.volumeBar = new ProgressBar.Line('#volume',
     {
         strokeWidth: 2,
@@ -99,7 +89,8 @@ var Jukebox = function()
     });
     this.volumeBar.set(this.volume);
 }
-var jukebox = null;
+
+let jukebox = null;
 
 // Jukebox Functions:
 /* insert(song{album, artist, name, path}) - mostly correct
@@ -130,7 +121,7 @@ Jukebox.prototype =
 {
     insert: function(song)
     {
-        var self = this;
+        let self = this;
         self.busy = true;
         // If this is the first song being inserted,
         // Initialize the player
@@ -153,11 +144,11 @@ Jukebox.prototype =
                     {
                         strokeWidth: 5,
                         trailWidth: 3,
-                        color: '#AAAACC',
+                        color: '#6868CC',
                         duration: self.player.duration() * 1000 - self.player.seek(),
                         trailColor: '#eee',
-                        from: {color: '#AAAACC', a:0},
-                        to: {color: '#0000FF', a:1},
+                        from: {color: '#6868CC', a:0},
+                        to: {color: '#5555FF', a:1},
                         step: function(state, circle)
                         {
                             circle.path.setAttribute('stroke', state.color);
@@ -165,7 +156,7 @@ Jukebox.prototype =
                     });
                     self.circle.set(self.player.seek() / self.player.duration());
                     self.circle.animate(1);
-                    self.wave.setSpeed(.0120);
+                    //waveself.wave.setSpeed(.0120);
                 },
                 onload: function()
                 {
@@ -208,7 +199,7 @@ Jukebox.prototype =
                 },
                 onend: function()
                 {
-                    self.wave.setSpeed(.0040);
+                    //waveself.wave.setSpeed(.0040);
                     self.circle.stop();
                     // the jukebox will repeat itself if true
                     // so don't do anything else
@@ -220,7 +211,7 @@ Jukebox.prototype =
                         if(self.playlist.length > 0)
                         {
                             $("#playList li:nth-child(2)").remove();
-                            var nextSong = self.playlist.shift();
+                            let nextSong = self.playlist.shift();
                             self.currentSong = nextSong;
                             self.insert(nextSong);
                         }
@@ -239,14 +230,14 @@ Jukebox.prototype =
                     $('#playControl').removeClass('pause');
                     $('#playControl').addClass('play');
                     self.circle.stop();
-                    self.wave.setSpeed(.0040);
+                    //waveself.wave.setSpeed(.0040);
                 },
                 onstop: function()
                 {
                     $('#playControl').removeClass('pause');
                     $('#playControl').addClass('play');
                     self.circle.stop();
-                    self.wave.setSpeed(.0040);
+                    //waveself.wave.setSpeed(.0040);
                 },
             });
         }
@@ -260,7 +251,7 @@ Jukebox.prototype =
     },
     insertToFront: function(song)
     {
-        var self = this;
+        let self = this;
         if(self.player == null || self.isFinished)
             self.insert(song);
         else
@@ -285,12 +276,13 @@ Jukebox.prototype =
     changeVolume: function(vol)
     {
         this.volume = vol;
-        this.wave.setAmplitude(this.volume);
+        //wavethis.wave.setAmplitude(this.volume);
         if(this.player != null)
             this.player.volume(vol);
     },
     // TODO: Change seekTo to seek to percentage
     // instead of amount of time (as is, it seeks to seekTo: seconds)
+    // TODO: Actually use this...
     seek: function(seekTo)
     {
         //if(this.player.state() == 'unloaded' ||
@@ -312,7 +304,7 @@ Jukebox.prototype =
             this.player.stop();
             this.isFinished = true;
             this.priorSongs.push(this.currentSong);
-            var nextSong = this.playlist.shift();
+            let nextSong = this.playlist.shift();
             this.currentSong = nextSong;
             this.insert(nextSong);
             this.skips -= 1;
@@ -335,7 +327,7 @@ Jukebox.prototype =
             this.player.stop();
             this.isFinished = true;
             this.playlist.unshift(this.currentSong);
-            var prevSong = this.priorSongs.pop();
+            let prevSong = this.priorSongs.pop();
 
             this.currentSong = prevSong;
             this.insert(prevSong);
@@ -350,7 +342,7 @@ Jukebox.prototype =
     },
     pause: function()
     {
-        this.wave.setSpeed(.0040);
+        //wavethis.wave.setSpeed(.0040);
         this.autoplay = false;
         this.player.pause();
     },
@@ -402,10 +394,12 @@ function playControl()
 
 function insertToPlaylistGUI(song, mode)
 {
+    console.log(song);
     if(jukebox == null) return;
+    // mode == 1 puts the song up next
     if(mode == 1)
     {
-        $("#playList li:eq(0)").after('<li>' +
+        $("#playList li:eq(0)").after('<li class="' + song.id + '">' +
             '<div class="songArtist">' +
             song.name + ', ' + song.artist + '</div>' +
             '<div class="up" onclick="moveUp(this)">&and;</div>' +
@@ -416,7 +410,7 @@ function insertToPlaylistGUI(song, mode)
     }
     else
     {
-        $('#playList').append('<li>' +
+        $('#playList').append('<li class="' + song.id + '">' +
             '<div class="songArtist">' +
             song.name + ', ' + song.artist + '</div>' +
             '<div class="up" onclick="moveUp(this)">&and;</div>' +
@@ -426,7 +420,7 @@ function insertToPlaylistGUI(song, mode)
         '</li>');
     }
 
-    $('#playList li:not(:first-child)').hover(
+    $('#playList .' + song.id).hover(
         function()
         {
             $(this).children('.songArtist').css('width', '146px');
@@ -460,41 +454,47 @@ function lowerVolume()
 {
     if(jukebox.volume > 0)
     {
-        var newVol = jukebox.volume -= .10;
+        let newVol = jukebox.volume -= .10;
         if(newVol < 0)
             jukebox.changeVolume(0);
         else
             jukebox.changeVolume(newVol)
         jukebox.volumeBar.set(jukebox.volume);
     }
+    else
+        $.notify('Volume can\'t be decreased lower!', 'warn');
+
 }
 
 function raiseVolume()
 {
+    console.log(jukebox.volume);
     if(jukebox.volume < 1.0)
     {
-        var newVol = jukebox.volume += .10;
+        let newVol = jukebox.volume += .10;
         if(newVol > 1.0)
             jukebox.changeVolume(1.0)
         else
             jukebox.changeVolume(newVol);
         jukebox.volumeBar.set(jukebox.volume);
     }
+    else
+        $.notify('Volume can\'t be raised higher!', 'warn');
 }
 
 function moveUp(source)
 {
-    var list = $(source).parent().parent('#playList').children();
+    let list = $(source).parent().parent('#playList').children();
     source = $(source).parent();
 
-    var index = list.index(source);
+    let index = list.index(source);
 
     // If it's not already the top...
     if(index != 1)
     {
-        var eleUp = list[index];
-        var eleDown = list[index-1];
-        var temp = jukebox.playlist[index - 1];
+        let eleUp = list[index];
+        let eleDown = list[index-1];
+        let temp = jukebox.playlist[index - 1];
         jukebox.playlist[index - 1] = jukebox.playlist[index - 2];
         jukebox.playlist[index - 2] = temp;
         $("#playList li:nth-child(" + (index) + ")").remove();
@@ -530,17 +530,17 @@ function moveUp(source)
 
 function moveDown(source)
 {
-    var list = $(source).parent().parent('#playList').children();
+    let list = $(source).parent().parent('#playList').children();
     source = $(source).parent();
 
-    var index = list.index(source);
+    let index = list.index(source);
 
     // If it's not already the top...
     if(index != (list.length - 1))
     {
-        var eleUp = list[index];
-        var eleDown = list[index+1];
-        var temp = jukebox.playlist[index];
+        let eleUp = list[index];
+        let eleDown = list[index+1];
+        let temp = jukebox.playlist[index];
         jukebox.playlist[index] = jukebox.playlist[index - 1];
         jukebox.playlist[index - 1] = temp;
         $("#playList li:nth-child(" + (index+1) + ")").remove();
@@ -575,18 +575,18 @@ function moveDown(source)
 
 function moveTop(source)
 {
-    var list = $(source).parent().parent('#playList').children();
+    let list = $(source).parent().parent('#playList').children();
     source = $(source).parent();
 
-    var index = list.index(source);
+    let index = list.index(source);
 
     // If it's not already the top...
     if(index != 1)
     {
-        var eleUp = list[index];
+        let eleUp = list[index];
 
-        var temp = jukebox.playlist[index - 1];
-        var removeIndex = jukebox.playlist.indexOf(temp);
+        let temp = jukebox.playlist[index - 1];
+        let removeIndex = jukebox.playlist.indexOf(temp);
         jukebox.playlist.splice(removeIndex, 1);
         jukebox.playlist.unshift(temp);
         $("#playList li:nth-child(" + (index+1) + ")").remove();
@@ -606,12 +606,12 @@ function moveTop(source)
 
 function remove(source)
 {
-    var list = $(source).parent().parent('#playList').children();
+    let list = $(source).parent().parent('#playList').children();
     source = $(source).parent();
 
-    var index = list.index(source);
+    let index = list.index(source);
 
-    var removeIndex = jukebox.playlist.indexOf(jukebox.playlist[index - 1]);
+    let removeIndex = jukebox.playlist.indexOf(jukebox.playlist[index - 1]);
     jukebox.playlist.splice(removeIndex, 1);
     $("#playList li:nth-child(" + (index+1) + ")").remove();
 }
@@ -622,36 +622,28 @@ function remove(source)
  */
 function getCoverArt(tag)
 {
-    if(jukebox.mode == 'waves' || tag === undefined) {generateWaves(); return;}
-    var image = tag.tags.picture;
+    //waveif(jukebox.mode == 'waves' || tag === undefined) {generateWaves(); return;}
+    let image = tag.tags.picture;
     /* If the image exists, create the base64 image from the data and display it*/
     if(image)
     {
-        var base64String = "";
-        for(var i = 0; i < image.data.length; i++)
+        let base64String = "";
+        for(let i = 0; i < image.data.length; i++)
         {
             base64String += String.fromCharCode(image.data[i]);
         }
-        var base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
+        let base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
         if(jukebox.mode == 'default' || jukebox.mode == 'always')
         {
             $('#waves').addClass('hidden');
             $('#activeCoverArt').removeClass('hidden');
             changeArt(base64);
         }
-
-        /*var colorThief = new ColorThief();
-        var palette = colorThief.getPalette(document.getElementById('activeCoverArt'), 2);
-        var dominateColor = colorThief.getColor(document.getElementById('activeCoverArt'));
-        jukebox.primaryColor = rgbToHex(dominateColor[0], dominateColor[1], dominateColor[2]);
-        jukebox.secondaryColor = rgbToHex(palette[0][0], palette[0][1], palette[0][2]);
-        console.log(jukebox.secondaryColor);
-        console.log(jukebox.primaryColor);*/
     }
     else /* This handles the image when the data isn't available */
     {
-        if(jukebox.mode == 'default') {generateWaves(); return;}
-        var genreName = "none";
+        //waveif(jukebox.mode == 'default') {generateWaves(); return;}
+        let genreName = "none";
         if(tag.tags.genre)
         {
             genreName = tag.tags.genre;
@@ -684,7 +676,7 @@ function getCoverArt(tag)
  */
 function changeArt(src)
 {
-    var activeImage = $("#activeCoverArt");
+    let activeImage = $("#activeCoverArt");
     activeImage.attr("src", src);
 }
 
@@ -697,7 +689,7 @@ function generateWaves()
 
 function componentToHex(c)
 {
-    var hex = c.toString(16);
+    let hex = c.toString(16);
     return hex.length == 1 ? '0' + hex: hex;
 }
 
@@ -709,9 +701,9 @@ function rgbToHex(r, g, b)
 function resetColor() {modColor(jukebox.wave, 255, 255, 255, 0);}
 function modColor(wave, red, green, blue, mode)
 {
-    var r;
-    var g;
-    var b;
+    let r;
+    let g;
+    let b;
     switch(mode)
     {
         case 0: // start: 255,255,255 - end: 255,0,255
@@ -787,7 +779,7 @@ function modColor(wave, red, green, blue, mode)
             break;
     }
 
-    var color = r + ',' + g + ',' + b;
-    wave.color = color;
+    let color = r + ',' + g + ',' + b;
+    //wavewave.color = color;
     setTimeout(modColor, 250, wave, r, g, b, mode);
 }

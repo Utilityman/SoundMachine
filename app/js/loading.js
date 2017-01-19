@@ -1,9 +1,9 @@
 
-var ProgressBar = require('progressbar.js');
-var {ipcRenderer} = require('electron');
+let ProgressBar = require('progressbar.js');
+let {ipcRenderer} = require('electron');
 
-var loading = null;
-var maxVal = 0;
+let loading = null;
+let maxVal = 0;
 
 function initLoading()
 {

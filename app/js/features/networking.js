@@ -1,23 +1,23 @@
 'use strict';
 
 // Networking
-var publicIp = require('public-ip');
-var app = null;
-var server = null;
-var io = null;
-var broadcasting = false;
-var room;
+let publicIp = require('public-ip');
+let app = null;
+let server = null;
+let io = null;
+let broadcasting = false;
+let room;
 
 // TODO: Keep track of users and their ids
 
-var Room = function()
+let Room = function()
 {
     this.users = [];
     this.password = "";
     this.collection = null;
 }
 
-var User = function(id, username)
+let User = function(id, username)
 {
     this.id = id;
     this.name = username;
@@ -47,7 +47,7 @@ function toggleBroadcast()
         });
 
         room = new Room();
-        var count = 0;
+        let count = 0;
         io.on('connection', function(socket)
         {
             console.log('User Connected!');
@@ -58,7 +58,7 @@ function toggleBroadcast()
             socket.on('userVerification', function(data)
             {
                 room.users.push(new User(socket.id, data.username));
-                var newRow = $('<tr class="active hidden"><td>' +
+                let newRow = $('<tr class="active hidden"><td>' +
                                data.username + '</td></tr>');
 
                 $('#userTable tr:last').after(newRow);
