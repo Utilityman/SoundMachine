@@ -11,9 +11,9 @@ For users that are looking for more, SoundMachine can be used to be a remote juk
 to stream your collection. 
 
 ###Contents
-- [Resources](#Resources)
-- [Building](#Building)
-- [Downloads](#Downloads)
+- [Resources](#resources)
+- [Building](#building)
+- [Downloads](#downloads)
 
 ##Resources
 
