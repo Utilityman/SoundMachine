@@ -31,3 +31,5 @@ SoundMachine-win32-x64/
 *.swp
 
 app/data/manifest_copy.json
+
+npm-debug.log

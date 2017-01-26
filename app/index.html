@@ -14,16 +14,18 @@
     <script type='text/javascript' src='js/internal_libs/siriwave.js'></script>
     <script type="text/javascript" src="js/internal_libs/vanilla.js"></script>
 
+    <!-- index.js gets loaded first in case any other file has dependencies on it -->
+    <!-- TODO: Should any files depend on any other file? -->  
+    <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/tree.js"></script>
     <script type="text/javascript" src="js/jukebox.js"></script>
-    <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/features/library.js"></script>
     <script type="text/javascript" src="js/features/networking.js"></script>
 
     <!-- Last necassary line for imports -->
     <script>if (window.module) module = window.module;</script>
 </head>
-<body onload="startup()" onresize="resizeWindow()" style="-webkit-app-region: drag">
+<body onresize="resizeWindow()" style="-webkit-app-region: drag">
 
 
 <div id="channelMenu">

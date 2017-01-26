@@ -1,7 +1,6 @@
 {
   "name": "sound-machine",
   "version": "1.0.0",
-  "private": true,
   "description": "Cross Platform Music Machine",
   "main": "./main.js",
   "scripts": {
@@ -9,13 +8,16 @@
     "clean": "rm ./app/data/manifest.json && rm ./app/data/downloads/*",
     "build-mac": "electron-packager . SoundMachine --platform=darwin --arch=all --icon ./app/imgs/iconV2.icns --prune --overwrite --ignore=devRes",
     "build-win": "electron-packager . SoundMachine --platform=win32 --arch=all --prune --overwrite --ignore=devRes",
-    "restore-manifest": "cp -f ./app/data/manifest_copy.json ./app/data/manifest.json"
+    "restore-manifest": "cp -f ./app/data/manifest_copy.json ./app/data/manifest.json",
+    "linter": "semistandard --verbose | snazzy"
   },
   "author": "Josh Mackin",
   "license": "ISC",
   "devDependencies": {
     "electron-installer-dmg": "^0.1.1",
-    "electron-packager": "^7.7.0"
+    "electron-packager": "^7.7.0",
+    "semistandard": "^9.2.1",
+    "snazzy": "^6.0.0"
   },
   "dependencies": {
     "electron": "^1.4.5",
@@ -29,5 +31,10 @@
     "socket.io": "^1.4.8",
     "socket.io-client": "^1.4.8",
     "ytdl-core": "^0.7.17"
+  },
+  "semistandard": {
+    "ignore": [
+      "/app/js/internal_libs"
+    ]
   }
 }
