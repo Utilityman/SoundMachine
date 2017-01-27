@@ -1,4 +1,7 @@
-# SoundMachine
+
+
+#<img src="app/imgs/iconV2.png" height="80px" width="80px" align="center" alt="Spectron icon">SoundMachine
+
 [![js-semistandard-style](https://cdn.rawgit.com/flet/semistandard/master/badge.svg)](https://github.com/Flet/semistandard)
 
 Simply - SoundMachine is a simple and featureful music playback application.
