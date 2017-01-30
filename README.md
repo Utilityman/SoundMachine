@@ -1,6 +1,6 @@
 
 
-#<img src="app/imgs/iconV2.png" height="80px" width="80px" align="center" alt="Spectron icon">SoundMachine
+#<img src="app/imgs/iconV2.png" height="80px" width="80px" align="center" alt="SoundMachine Icon">SoundMachine
 
 [![js-semistandard-style](https://cdn.rawgit.com/flet/semistandard/master/badge.svg)](https://github.com/Flet/semistandard)
 

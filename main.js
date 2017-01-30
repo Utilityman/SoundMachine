@@ -35,7 +35,7 @@ function createWindow () {
   });
 
   loadWindow.loadURL(path.join('file://', __dirname, '/app/load.html'));
-  mainWindow.loadURL(path.join('file://', __dirname, '/app/index.html'));
+  mainWindow.loadURL(path.join('file://', __dirname, '/app/core.html'));
 
   // if the main window isn't opening, uncomment this to immediately see mainWindow/devTools
   // mainWindow.webContents.openDevTools(); mainWindow.show();

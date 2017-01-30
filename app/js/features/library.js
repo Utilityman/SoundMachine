@@ -1,3 +1,5 @@
+'use strict';
+
 /* global fs path jukebox SongData Tree $ toggleWindow jsmediatags sendProgress */
 /* eslint-disable no-unused-vars */
 /**
@@ -8,7 +10,6 @@
  *  A few of these functions are shared with the
  *  Playlists tab
  */
-
 let ytdl = require('ytdl-core');
 
  // TODO: Make a switch to change default loadout?

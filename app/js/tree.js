@@ -1,4 +1,4 @@
-
+'use strict';
 // TODO: How to wrap this up as an independent module
 let debugging = false;
 
@@ -174,3 +174,5 @@ function contains (list, obj) {
   }
   return false;
 }
+
+module.exports = Tree;
