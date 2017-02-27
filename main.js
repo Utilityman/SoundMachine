@@ -34,11 +34,11 @@ function createWindow () {
     icon: path.join(__dirname, '/app/imgs/iconV2.png')
   });
 
-  loadWindow.loadURL(path.join('file://', __dirname, '/app/load.html'));
+  loadWindow.loadURL(path.join('file://', __dirname, '/app/splash.html'));
   mainWindow.loadURL(path.join('file://', __dirname, '/app/core.html'));
 
   // if the main window isn't opening, uncomment this to immediately see mainWindow/devTools
-  // mainWindow.webContents.openDevTools(); mainWindow.show();
+  mainWindow.webContents.openDevTools(); mainWindow.show();
   loadWindow.on('closed', () => {
     loadWindow = null;
     if (!selfDestructed) {

@@ -396,7 +396,7 @@ function skipBack () {  // eslint-disable-line
   jukebox.prev();
 }
 
-function lowerVolumem () {  // eslint-disable-line
+function lowerVolume () {  // eslint-disable-line
                             // this is used in HTML elements
   if (jukebox.volume > 0) {
     let newVol = jukebox.volume -= 0.10;
@@ -552,6 +552,11 @@ function remove (source) {  // eslint-disable-line
  *  Also handles cases where the cover art doesn't exist
  */
 function getCoverArt (tag) {
+  if (typeof tag === 'undefined') {
+    changeArt('imgs/discIcon.png');
+    return;
+  }
+
   let image = tag.tags.picture;
   /* If the image exists, create the base64 image from the data and display it */
   if (image) {

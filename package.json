@@ -2,13 +2,14 @@
   "name": "sound-machine",
   "version": "1.0.0",
   "description": "Cross Platform Music Machine",
+  "repository": "https://github.com/Utilityman/SoundMachine",
   "main": "./main.js",
   "scripts": {
     "start": "electron .",
     "clean": "rm ./app/data/manifest.json && rm ./app/data/downloads/*",
     "build-mac": "electron-packager . SoundMachine --platform=darwin --arch=all --icon ./app/imgs/iconV2.icns --prune --overwrite --ignore=devRes",
     "build-win": "electron-packager . SoundMachine --platform=win32 --arch=all --prune --overwrite --ignore=devRes",
-    "restore-manifest": "cp -f ./app/data/manifest_copy.json ./app/data/manifest.json",
+    "restore": "cp -f ./app/data/manifest_copy.json ./app/data/manifest.json",
     "linter": "semistandard --verbose | snazzy",
     "test": "mocha"
   },
@@ -16,7 +17,6 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0",
-    "electron-installer-dmg": "^0.1.1",
     "electron-packager": "^7.7.0",
     "mocha": "^3.2.0",
     "mocha-jsdom": "^1.1.0",

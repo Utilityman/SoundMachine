@@ -10,8 +10,8 @@ For users who are looking for a way to play the music on their computer without 
 about the overhead of other modern counterparts, this application can be used to simply
 listen to your local music collection.
 
-For users that are looking for more, SoundMachine can be used to be a remote jukebox or
-to stream your collection.
+For users that are looking for more, SoundMachine can be used as a remote jukebox or
+as a streaming platform for your music library.
 
 ###Contents
 - [Resources](#resources)

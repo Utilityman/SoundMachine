@@ -1,16 +1,28 @@
 'use strict';
 
-/* global fs path jukebox SongData Tree $ toggleWindow jsmediatags sendProgress */
+/* global fs path jukebox SongData $ toggleWindow jsmediatags sendProgress */
 /* eslint-disable no-unused-vars */
 /**
  *  TODO: This file is huge and needs to be shortened, consider what is library code and what isnt.
  *  This file contains the functions and variables for
  *  the library pane.
  *
+ *  Library should be its own module? Currently all these functions are floating in
+ *  global namespace and it might be better to make a difference between functions
+ *  which need to be in the global namespace and those which do not.
+ *  e.g.
+ *  shuffle() should be private to the library - nothing else uses it
+ *  setupLibraryPane should be public (defined by the prototype) as one
+ *  should be able to call library.setupLibraryPane in order to initialize a library.
+ *
  *  A few of these functions are shared with the
- *  Playlists tab
+ *  Playlists tab - perhaps those should be 'Player' functions
+ *  not specifically library functions
  */
+
 let ytdl = require('ytdl-core');
+
+let Tree = require(path.join(__dirname, '/js/tree.js'));
 
  // TODO: Make a switch to change default loadout?
  /**
@@ -207,6 +219,10 @@ function addYoutubeFileToCollection (youtube, title, path) {
                       youtube,
                       title,
                       path);
+  collection.addAll(youtube,
+                    youtube,
+                    title,
+                    path);
   appendToLibraryPane(miniCollection);
 }
 
@@ -262,69 +278,85 @@ function setupLibraryPane () {
  * continues are used to escape a bad iteration
  */
 function appendToLibraryPane (miniCollection) {
+  /**
+   *  Songs exist inside of collection, we just have to check if
+   *  they're represented in the GUI and then get their ID from the collection
+   */
   let baseList = $('#resourceTree');
   let artistList = $('#resourceTree .artist');
   let albumList = $('#resourceTree .album');
   let titles = $('#resourceTree .song');
 
   let found = false;
+
+  // artist level
   let newArtists = miniCollection.branches;
-
-  // Essentially this goes through each level of the miniColl
   for (let j = 0; j < newArtists.length; j++) {
-    let artistID = -1;
     found = false;
-    for (let i = 0; i < artistList.length; i++) {
-      if (artistList[i].innerHTML === newArtists[j].item) {
-        found = true;
-        artistID = $(artistList[i]).attr('id').replace(/\D/g, '');
-        break;
-      }
-    }
-    if (!found) {
-      artistID = collection.addNewArtist(newArtists[j].item);
-      addArtistDOM(baseList, artistID, newArtists[j].item);
-    }
-    if (artistID === -1) { console.log('artistID retreival failed'); continue; }
+    let artistID = collection.getArtistID(newArtists[j].item);
 
-    let newAlbums = miniCollection.getAlbumsFromArtist(newArtists[j].id);
-    for (let k = 0; k < newAlbums.length; k++) {
-      let albumID = -1;
-      found = false;
-      for (let i = 0; i < albumList.length; i++) {
-        if (albumList[i].innerHTML === newAlbums[k].item) {
+    if (artistID !== -1) {
+      for (let i = 0; i < artistList.length; i++) {
+        if (compareArtistDOMToIDs($(artistList[i]), artistID)) {
           found = true;
-          albumID = $(albumList[i]).attr('id').replace(/\D/g, '');
           break;
         }
       }
       if (!found) {
-        albumID = collection.addNewAlbum(artistID, newAlbums[k].item);
-        addAlbumDOM(baseList, artistID, albumID, newAlbums[k].item);
+        console.log(newArtists[j].item + ' not in the library -- adding it');
+        addArtistDOM(baseList, artistID, newArtists[j].item);
       }
-      if (albumID === -1) { console.log('albumID retreival failed'); continue; }
+    } else {
+      console.log('err: artistID retreival went wrong for ' + newArtists[j].item);
+      continue;
+    }
 
-      let newSongs = miniCollection.getSongsFromArtistAlbum(newArtists[j].id, newAlbums[j].id);
-      for (let a = 0; a < newSongs.length; a++) {
-        let songID = -1;
-        found = false;
-        for (let i = 0; i < titles.length; i++) {
-          if (titles[i].innerHTML === newSongs[a].item) {
-            // No need to save songID, the song already exists and we can loopback
+    // album level
+    let newAlbums = miniCollection.getAlbumsFromArtist(newArtists[j].id);
+    for (let k = 0; k < newAlbums.length; k++) {
+      found = false;
+      let albumID = collection.getAlbumID(artistID, newAlbums[k].item);
+      console.log(albumID);
+
+      if (albumID !== -1) {
+        for (let i = 0; i < albumList.length; i++) {
+          if (compareAlbumDOMToIDs($(albumList[i]), artistID, albumID)) {
             found = true;
             break;
           }
         }
         if (!found) {
-          // get song ID, assign the collection a path to access, make DOM
-          songID = collection.addNewSong(artistID, albumID, newSongs[a].item);
-          if (collection.assignPathToUnassigned(artistID, albumID, songID, newSongs[a].branches)) {
-            addSongDOM(baseList, artistID, albumID, songID, newSongs[a].item);
-          }
+          console.log(newAlbums[k].item + ' not in the library -- adding it');
+          addAlbumDOM(baseList, artistID, albumID, newAlbums[k].item);
         }
+      } else /* if albumID === -1 */ {
+        console.log('err: albumID retreival went wrong for ' + newAlbums[k].item);
+        continue;
       }
-    }
-  }
+
+      let newSongs = miniCollection.getSongsFromArtistAlbum(newArtists[j].id, newAlbums[k].id);
+      for (let a = 0; a < newSongs.length; a++) {
+        found = false;
+        let songID = collection.getSongID(artistID, albumID, newSongs[a].item);
+
+        if (songID !== -1) {
+          for (let i = 0; i < titles.length; i++) {
+            if (compareSongDOMToIDs($(titles[i]), artistID, albumID, songID)) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            console.log(newSongs[a].item + ' not in library -- addding it');
+            addSongDOM(baseList, artistID, albumID, songID, newSongs[a].item);
+            // addSongDOM(baseList, artists[i].id, albums[j].id, songs[k].id, songs[k].item);
+          }
+        } else /* if songID === -1 */ {
+          console.log('err: songID retreival went wrong for ' + newSongs[a].item);
+        } // end else
+      } // end for songs
+    } // end for albums
+  } // end for artists
 
   createManifest();
   miniCollection = new Tree();
@@ -447,6 +479,7 @@ function sortBy (sort) {
  *  Artist onclick event. This shows the albums that belong to the artist
  */
 function showAlbums (origin) {
+  console.log(origin);
   if ($(origin).hasClass('active') || $('.' + $(origin).attr('id')).hasClass('active')) {
     // collapse if clicked again
     $(origin).removeClass('active');
@@ -506,6 +539,8 @@ function showSettings (origin) {
  *  Album onclick event. This shows the songs belonging to album
  */
 function showSongs (origin) {
+  console.log(origin);
+
   if ($(origin).hasClass('active')) {
     // collapse if clicked again
     $(origin).removeClass('active');
@@ -564,16 +599,49 @@ function showExternalOptions () {
   $('#resourceTree .external').removeClass('hidden');
 }
 
+function compareArtistDOMToIDs (source, artistID) {
+  if ($(source).hasClass('artist')) {
+    let ids = $(source).attr('id').split('-');
+    if (parseInt(ids[0].replace(/\D/g, '')) === artistID) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function compareAlbumDOMToIDs (source, artistID, albumID) {
+  if ($(source).hasClass('album')) {
+    let ids = $(source).attr('id').split('-');
+    if (parseInt(ids[0].replace(/\D/g, '')) === artistID &&
+       parseInt(ids[1].replace(/\D/g, '')) === albumID) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function compareSongDOMToIDs (source, artistID, albumID, songID) {
+  if ($(source).hasClass('song')) {
+    let ids = $(source).attr('id').split('-');
+    if (parseInt(ids[0].replace(/\D/g, '')) === artistID &&
+        parseInt(ids[1].replace(/\D/g, '')) === albumID &&
+        parseInt(ids[2].replace(/\D/g, '')) === songID) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
- * gets song form DOM
+ * gets entire song data from DOM
  */
-function getSongFromDOM (source) {
+function getSongDataFromDOM (source) {
   if (!$(source).hasClass('song')) return null;
   let songIDs = $(source).attr('id').split('-');
   return collection.getSongSecure(
-     songIDs[0].replace(/\D/g, ''),
-     songIDs[1].replace(/\D/g, ''),
-     songIDs[2].replace(/\D/g, ''));
+     parseInt(songIDs[0].replace(/\D/g, '')),
+     parseInt(songIDs[1].replace(/\D/g, '')),
+     parseInt(songIDs[2].replace(/\D/g, '')));
 }
 
 /**
@@ -582,8 +650,7 @@ function getSongFromDOM (source) {
  */
 function addToPlaylist (origin) {
   let originID = $(origin).attr('id');
-  let collectionData = getSongFromDOM(origin);
-
+  let collectionData = getSongDataFromDOM(origin);
   if (!collectionData) return console.log('unexpected crazy error with ' + collectionData);
 
   jukebox.insert(new SongData(collectionData[0],
@@ -600,7 +667,7 @@ function addToPlaylist (origin) {
  */
 function addToFront (origin) {
   let originID = $(origin).attr('id');
-  let collectionData = getSongFromDOM(origin);
+  let collectionData = getSongDataFromDOM(origin);
 
   if (!collectionData) return console.log('unexpected crazy error with ' + collectionData);
 
@@ -721,9 +788,9 @@ function streamFromYoutube (yourl) {
         return;
       }
       let stream = ytdl(yourl, { filter: function (format) { return format.container === 'webm'; } })
-      .pipe(fs.createWriteStream(path.join(__dirname, '/data/downloads/', info.title, '.webm')))
+      .pipe(fs.createWriteStream(path.join(__dirname, '/data/downloads/', info.title + '.webm')))
       .on('finish', function () {
-        addYoutubeFileToCollection('Youtube', info.title, path.join(__dirname, '/data/downloads/', info.title, '.webm'));
+        addYoutubeFileToCollection('Youtube', info.title, path.join(__dirname, '/data/downloads/', info.title + '.webm'));
         $('#youtubeUpload').prop('disabled', false);
         $('#youtubeUpload').css('color', 'black');
         $('#youtubeUpload').val('Download Success!');
