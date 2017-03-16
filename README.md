@@ -1,6 +1,6 @@
 
 
-#<img src="app/imgs/iconV2.png" height="80px" width="80px" align="center" alt="SoundMachine Icon">SoundMachine
+# <img src="app/imgs/iconV2.png" height="80px" width="80px" align="center" alt="SoundMachine Icon">SoundMachine
 
 [![js-semistandard-style](https://cdn.rawgit.com/flet/semistandard/master/badge.svg)](https://github.com/Flet/semistandard)
 
@@ -13,19 +13,19 @@ listen to your local music collection.
 For users that are looking for more, SoundMachine can be used as a remote jukebox or
 as a streaming platform for your music library.
 
-###Contents
+### Contents
 - [Resources](#resources)
 - [Building](#building)
 - [Downloads](#downloads)
 
-##Resources
+## Resources
 
 Coming Soon
 
-##Building
+## Building
 
 Coming Soon
 
-##Downloads
+## Downloads
 
 Coming Soon
